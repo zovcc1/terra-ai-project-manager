@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mvn compile *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8080/api/auth/login)",
+      "Bash(timeout 30 mvn spring-boot:run)",
+      "Bash(systemctl is-active *)",
+      "Bash(service mariadb *)",
+      "Bash(curl -s -X POST http://localhost:8080/api/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"admin@terra.com\",\"password\":\"password\"}')",
+      "Bash(python3 -m json.tool)",
+      "Read(//tmp/**)",
+      "Bash(python3 -c ' *)",
+      "Bash(curl -s -X POST http://localhost:8080/api/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"member@terra.com\",\"password\":\"password\"}')",
+      "Bash(javap -c target/classes/com/terra/backend/controller/AiCommandController.class)"
+    ]
+  }
+}
