@@ -9,13 +9,15 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VerifyRouteImport } from './routes/verify'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as UserProfileRouteImport } from './routes/user/profile'
-import { Route as MemberTaskDetailRouteImport } from './routes/member/task-detail'
 import { Route as MemberMyTasksRouteImport } from './routes/member/my-tasks'
 import { Route as MemberKanbanRouteImport } from './routes/member/kanban'
-import { Route as ManagerProjectDetailRouteImport } from './routes/manager/project-detail'
+import { Route as ManagerKanbanRouteImport } from './routes/manager/kanban'
 import { Route as ManagerDashboardRouteImport } from './routes/manager/dashboard'
 import { Route as ManagerCreateProjectRouteImport } from './routes/manager/create-project'
 import { Route as ManagerAnalyticsRouteImport } from './routes/manager/analytics'
@@ -23,10 +25,28 @@ import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminTeamsRouteImport } from './routes/admin/teams'
 import { Route as AdminSystemStatsRouteImport } from './routes/admin/system-stats'
 import { Route as AdminAiSettingsRouteImport } from './routes/admin/ai-settings'
+import { Route as MemberTasksTaskIdRouteImport } from './routes/member/tasks.$taskId'
+import { Route as ManagerTasksTaskIdRouteImport } from './routes/manager/tasks.$taskId'
+import { Route as ManagerProjectsProjectIdRouteImport } from './routes/manager/projects.$projectId'
 
+const VerifyRoute = VerifyRouteImport.update({
+  id: '/verify',
+  path: '/verify',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -39,11 +59,6 @@ const UserProfileRoute = UserProfileRouteImport.update({
   path: '/user/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
-const MemberTaskDetailRoute = MemberTaskDetailRouteImport.update({
-  id: '/member/task-detail',
-  path: '/member/task-detail',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const MemberMyTasksRoute = MemberMyTasksRouteImport.update({
   id: '/member/my-tasks',
   path: '/member/my-tasks',
@@ -54,9 +69,9 @@ const MemberKanbanRoute = MemberKanbanRouteImport.update({
   path: '/member/kanban',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ManagerProjectDetailRoute = ManagerProjectDetailRouteImport.update({
-  id: '/manager/project-detail',
-  path: '/manager/project-detail',
+const ManagerKanbanRoute = ManagerKanbanRouteImport.update({
+  id: '/manager/kanban',
+  path: '/manager/kanban',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ManagerDashboardRoute = ManagerDashboardRouteImport.update({
@@ -94,10 +109,29 @@ const AdminAiSettingsRoute = AdminAiSettingsRouteImport.update({
   path: '/admin/ai-settings',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MemberTasksTaskIdRoute = MemberTasksTaskIdRouteImport.update({
+  id: '/member/tasks/$taskId',
+  path: '/member/tasks/$taskId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ManagerTasksTaskIdRoute = ManagerTasksTaskIdRouteImport.update({
+  id: '/manager/tasks/$taskId',
+  path: '/manager/tasks/$taskId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ManagerProjectsProjectIdRoute =
+  ManagerProjectsProjectIdRouteImport.update({
+    id: '/manager/projects/$projectId',
+    path: '/manager/projects/$projectId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/verify': typeof VerifyRoute
   '/admin/ai-settings': typeof AdminAiSettingsRoute
   '/admin/system-stats': typeof AdminSystemStatsRoute
   '/admin/teams': typeof AdminTeamsRoute
@@ -105,15 +139,20 @@ export interface FileRoutesByFullPath {
   '/manager/analytics': typeof ManagerAnalyticsRoute
   '/manager/create-project': typeof ManagerCreateProjectRoute
   '/manager/dashboard': typeof ManagerDashboardRoute
-  '/manager/project-detail': typeof ManagerProjectDetailRoute
+  '/manager/kanban': typeof ManagerKanbanRoute
   '/member/kanban': typeof MemberKanbanRoute
   '/member/my-tasks': typeof MemberMyTasksRoute
-  '/member/task-detail': typeof MemberTaskDetailRoute
   '/user/profile': typeof UserProfileRoute
+  '/manager/projects/$projectId': typeof ManagerProjectsProjectIdRoute
+  '/manager/tasks/$taskId': typeof ManagerTasksTaskIdRoute
+  '/member/tasks/$taskId': typeof MemberTasksTaskIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/verify': typeof VerifyRoute
   '/admin/ai-settings': typeof AdminAiSettingsRoute
   '/admin/system-stats': typeof AdminSystemStatsRoute
   '/admin/teams': typeof AdminTeamsRoute
@@ -121,16 +160,21 @@ export interface FileRoutesByTo {
   '/manager/analytics': typeof ManagerAnalyticsRoute
   '/manager/create-project': typeof ManagerCreateProjectRoute
   '/manager/dashboard': typeof ManagerDashboardRoute
-  '/manager/project-detail': typeof ManagerProjectDetailRoute
+  '/manager/kanban': typeof ManagerKanbanRoute
   '/member/kanban': typeof MemberKanbanRoute
   '/member/my-tasks': typeof MemberMyTasksRoute
-  '/member/task-detail': typeof MemberTaskDetailRoute
   '/user/profile': typeof UserProfileRoute
+  '/manager/projects/$projectId': typeof ManagerProjectsProjectIdRoute
+  '/manager/tasks/$taskId': typeof ManagerTasksTaskIdRoute
+  '/member/tasks/$taskId': typeof MemberTasksTaskIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/verify': typeof VerifyRoute
   '/admin/ai-settings': typeof AdminAiSettingsRoute
   '/admin/system-stats': typeof AdminSystemStatsRoute
   '/admin/teams': typeof AdminTeamsRoute
@@ -138,17 +182,22 @@ export interface FileRoutesById {
   '/manager/analytics': typeof ManagerAnalyticsRoute
   '/manager/create-project': typeof ManagerCreateProjectRoute
   '/manager/dashboard': typeof ManagerDashboardRoute
-  '/manager/project-detail': typeof ManagerProjectDetailRoute
+  '/manager/kanban': typeof ManagerKanbanRoute
   '/member/kanban': typeof MemberKanbanRoute
   '/member/my-tasks': typeof MemberMyTasksRoute
-  '/member/task-detail': typeof MemberTaskDetailRoute
   '/user/profile': typeof UserProfileRoute
+  '/manager/projects/$projectId': typeof ManagerProjectsProjectIdRoute
+  '/manager/tasks/$taskId': typeof ManagerTasksTaskIdRoute
+  '/member/tasks/$taskId': typeof MemberTasksTaskIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/forgot-password'
     | '/login'
+    | '/reset-password'
+    | '/verify'
     | '/admin/ai-settings'
     | '/admin/system-stats'
     | '/admin/teams'
@@ -156,15 +205,20 @@ export interface FileRouteTypes {
     | '/manager/analytics'
     | '/manager/create-project'
     | '/manager/dashboard'
-    | '/manager/project-detail'
+    | '/manager/kanban'
     | '/member/kanban'
     | '/member/my-tasks'
-    | '/member/task-detail'
     | '/user/profile'
+    | '/manager/projects/$projectId'
+    | '/manager/tasks/$taskId'
+    | '/member/tasks/$taskId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/forgot-password'
     | '/login'
+    | '/reset-password'
+    | '/verify'
     | '/admin/ai-settings'
     | '/admin/system-stats'
     | '/admin/teams'
@@ -172,15 +226,20 @@ export interface FileRouteTypes {
     | '/manager/analytics'
     | '/manager/create-project'
     | '/manager/dashboard'
-    | '/manager/project-detail'
+    | '/manager/kanban'
     | '/member/kanban'
     | '/member/my-tasks'
-    | '/member/task-detail'
     | '/user/profile'
+    | '/manager/projects/$projectId'
+    | '/manager/tasks/$taskId'
+    | '/member/tasks/$taskId'
   id:
     | '__root__'
     | '/'
+    | '/forgot-password'
     | '/login'
+    | '/reset-password'
+    | '/verify'
     | '/admin/ai-settings'
     | '/admin/system-stats'
     | '/admin/teams'
@@ -188,16 +247,21 @@ export interface FileRouteTypes {
     | '/manager/analytics'
     | '/manager/create-project'
     | '/manager/dashboard'
-    | '/manager/project-detail'
+    | '/manager/kanban'
     | '/member/kanban'
     | '/member/my-tasks'
-    | '/member/task-detail'
     | '/user/profile'
+    | '/manager/projects/$projectId'
+    | '/manager/tasks/$taskId'
+    | '/member/tasks/$taskId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
+  VerifyRoute: typeof VerifyRoute
   AdminAiSettingsRoute: typeof AdminAiSettingsRoute
   AdminSystemStatsRoute: typeof AdminSystemStatsRoute
   AdminTeamsRoute: typeof AdminTeamsRoute
@@ -205,20 +269,43 @@ export interface RootRouteChildren {
   ManagerAnalyticsRoute: typeof ManagerAnalyticsRoute
   ManagerCreateProjectRoute: typeof ManagerCreateProjectRoute
   ManagerDashboardRoute: typeof ManagerDashboardRoute
-  ManagerProjectDetailRoute: typeof ManagerProjectDetailRoute
+  ManagerKanbanRoute: typeof ManagerKanbanRoute
   MemberKanbanRoute: typeof MemberKanbanRoute
   MemberMyTasksRoute: typeof MemberMyTasksRoute
-  MemberTaskDetailRoute: typeof MemberTaskDetailRoute
   UserProfileRoute: typeof UserProfileRoute
+  ManagerProjectsProjectIdRoute: typeof ManagerProjectsProjectIdRoute
+  ManagerTasksTaskIdRoute: typeof ManagerTasksTaskIdRoute
+  MemberTasksTaskIdRoute: typeof MemberTasksTaskIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/verify': {
+      id: '/verify'
+      path: '/verify'
+      fullPath: '/verify'
+      preLoaderRoute: typeof VerifyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -235,13 +322,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UserProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/member/task-detail': {
-      id: '/member/task-detail'
-      path: '/member/task-detail'
-      fullPath: '/member/task-detail'
-      preLoaderRoute: typeof MemberTaskDetailRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/member/my-tasks': {
       id: '/member/my-tasks'
       path: '/member/my-tasks'
@@ -256,11 +336,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MemberKanbanRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/manager/project-detail': {
-      id: '/manager/project-detail'
-      path: '/manager/project-detail'
-      fullPath: '/manager/project-detail'
-      preLoaderRoute: typeof ManagerProjectDetailRouteImport
+    '/manager/kanban': {
+      id: '/manager/kanban'
+      path: '/manager/kanban'
+      fullPath: '/manager/kanban'
+      preLoaderRoute: typeof ManagerKanbanRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/manager/dashboard': {
@@ -312,12 +392,36 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAiSettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/member/tasks/$taskId': {
+      id: '/member/tasks/$taskId'
+      path: '/member/tasks/$taskId'
+      fullPath: '/member/tasks/$taskId'
+      preLoaderRoute: typeof MemberTasksTaskIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/manager/tasks/$taskId': {
+      id: '/manager/tasks/$taskId'
+      path: '/manager/tasks/$taskId'
+      fullPath: '/manager/tasks/$taskId'
+      preLoaderRoute: typeof ManagerTasksTaskIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/manager/projects/$projectId': {
+      id: '/manager/projects/$projectId'
+      path: '/manager/projects/$projectId'
+      fullPath: '/manager/projects/$projectId'
+      preLoaderRoute: typeof ManagerProjectsProjectIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
+  VerifyRoute: VerifyRoute,
   AdminAiSettingsRoute: AdminAiSettingsRoute,
   AdminSystemStatsRoute: AdminSystemStatsRoute,
   AdminTeamsRoute: AdminTeamsRoute,
@@ -325,11 +429,13 @@ const rootRouteChildren: RootRouteChildren = {
   ManagerAnalyticsRoute: ManagerAnalyticsRoute,
   ManagerCreateProjectRoute: ManagerCreateProjectRoute,
   ManagerDashboardRoute: ManagerDashboardRoute,
-  ManagerProjectDetailRoute: ManagerProjectDetailRoute,
+  ManagerKanbanRoute: ManagerKanbanRoute,
   MemberKanbanRoute: MemberKanbanRoute,
   MemberMyTasksRoute: MemberMyTasksRoute,
-  MemberTaskDetailRoute: MemberTaskDetailRoute,
   UserProfileRoute: UserProfileRoute,
+  ManagerProjectsProjectIdRoute: ManagerProjectsProjectIdRoute,
+  ManagerTasksTaskIdRoute: ManagerTasksTaskIdRoute,
+  MemberTasksTaskIdRoute: MemberTasksTaskIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

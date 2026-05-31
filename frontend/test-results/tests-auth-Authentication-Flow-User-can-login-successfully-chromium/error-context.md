@@ -24,7 +24,7 @@ Call log:
   1  | import { test, expect } from '@playwright/test';
   2  | import { ApiValidator } from '../utils/apiValidator';
   3  | import { LoginRequestSchema, LoginResponseSchema } from '../schemas/apiSchemas';
-  4  | 
+  4  |
   5  | test.describe('Authentication Flow', () => {
   6  |   test('User can login successfully', async ({ page }) => {
   7  |     // Setup API validation
@@ -37,21 +37,21 @@ Call log:
   14 |       schemaName: 'Login'
   15 |     });
   16 |     await apiValidator.startListening();
-  17 | 
+  17 |
   18 |     // 1. Navigate to login
 > 19 |     await page.goto('/login');
      |                ^ Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/login
-  20 | 
+  20 |
   21 |     // 2. Fill credentials
   22 |     await page.fill('input[name="username"]', 'manager');
   23 |     await page.fill('input[name="password"]', 'password');
-  24 | 
+  24 |
   25 |     // 3. Submit
   26 |     await page.click('button[type="submit"]');
-  27 | 
+  27 |
   28 |     // 4. Verify routing (should go to manager dashboard)
   29 |     await expect(page).toHaveURL(/\/manager\/dashboard/);
   30 |   });
   31 | });
-  32 | 
+  32 |
 ```

@@ -16,7 +16,7 @@ public class PendingActionResponse {
         PendingActionResponse r = new PendingActionResponse();
         r.setId(action.getId());
         r.setUserId(action.getUser() != null ? action.getUser().getId() : null);
-        r.setActionType(action.getActionType());
+        r.setActionType(action.getActionType() != null ? action.getActionType().name() : null);
         r.setTargetId(action.getTargetId());
         r.setNaturalLanguageCommand(action.getNaturalLanguageCommand());
         r.setStatus(action.getStatus() != null ? action.getStatus().name() : null);

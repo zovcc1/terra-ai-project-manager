@@ -50,21 +50,21 @@
 :root {
   --radius: 0.875rem;
   /* Terra — Rooted Warmth */
-  --background: oklch(0.965 0.018 80);          /* cream #faf6f0 */
-  --foreground: oklch(0.25 0.025 50);           /* deep brown */
+  --background: oklch(0.965 0.018 80); /* cream #faf6f0 */
+  --foreground: oklch(0.25 0.025 50); /* deep brown */
   --card: oklch(0.985 0.012 80);
   --card-foreground: oklch(0.25 0.025 50);
   --popover: oklch(0.985 0.012 80);
   --popover-foreground: oklch(0.25 0.025 50);
-  --primary: oklch(0.52 0.08 150);              /* forest green #4a7c59 */
+  --primary: oklch(0.52 0.08 150); /* forest green #4a7c59 */
   --primary-foreground: oklch(0.97 0.018 80);
-  --secondary: oklch(0.92 0.025 75);            /* warm sand */
+  --secondary: oklch(0.92 0.025 75); /* warm sand */
   --secondary-foreground: oklch(0.3 0.03 50);
   --muted: oklch(0.93 0.02 75);
   --muted-foreground: oklch(0.48 0.025 55);
-  --accent: oklch(0.5 0.08 70);                 /* amber #705c30 */
+  --accent: oklch(0.5 0.08 70); /* amber #705c30 */
   --accent-foreground: oklch(0.97 0.018 80);
-  --destructive: oklch(0.55 0.16 30);           /* terracotta */
+  --destructive: oklch(0.55 0.16 30); /* terracotta */
   --destructive-foreground: oklch(0.97 0.018 80);
   --success: oklch(0.6 0.1 150);
   --success-foreground: oklch(0.97 0.018 80);
@@ -95,12 +95,21 @@
     color: var(--color-foreground);
     font-family: var(--font-sans);
   }
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-display);
     letter-spacing: -0.01em;
   }
-  [dir="rtl"] h1, [dir="rtl"] h2, [dir="rtl"] h3,
-  [dir="rtl"] h4, [dir="rtl"] h5, [dir="rtl"] h6 {
+  [dir="rtl"] h1,
+  [dir="rtl"] h2,
+  [dir="rtl"] h3,
+  [dir="rtl"] h4,
+  [dir="rtl"] h5,
+  [dir="rtl"] h6 {
     font-family: var(--font-sans);
     font-weight: 700;
   }
@@ -114,7 +123,15 @@
   }
   .leaf-bg {
     background-image:
-      radial-gradient(circle at 15% 20%, color-mix(in oklab, var(--primary) 8%, transparent) 0, transparent 35%),
-      radial-gradient(circle at 85% 80%, color-mix(in oklab, var(--accent) 8%, transparent) 0, transparent 40%);
+      radial-gradient(
+        circle at 15% 20%,
+        color-mix(in oklab, var(--primary) 8%, transparent) 0,
+        transparent 35%
+      ),
+      radial-gradient(
+        circle at 85% 80%,
+        color-mix(in oklab, var(--accent) 8%, transparent) 0,
+        transparent 40%
+      );
   }
 }

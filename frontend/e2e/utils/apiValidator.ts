@@ -1,6 +1,6 @@
-import { Page } from '@playwright/test';
-import { ZodSchema } from 'zod';
-import { apiErrors } from './markdownReporter';
+import { Page } from "@playwright/test";
+import { ZodSchema } from "zod";
+import { apiErrors } from "./markdownReporter";
 
 interface EndpointSchema {
   pathPattern: RegExp;
@@ -20,12 +20,12 @@ export class ApiValidator {
   }
 
   async startListening() {
-    this.page.on('request', async (request) => {
+    this.page.on("request", async (request) => {
       const url = request.url();
       const method = request.method();
 
       const matchedConfig = this.schemas.find(
-        (s) => s.pathPattern.test(url) && s.method === method
+        (s) => s.pathPattern.test(url) && s.method === method,
       );
 
       if (matchedConfig && matchedConfig.requestSchema) {
@@ -38,10 +38,10 @@ export class ApiValidator {
               apiErrors.push({
                 endpoint: url,
                 method,
-                type: 'Request',
+                type: "Request",
                 expectedSchemaName: matchedConfig.schemaName + "Request",
                 actualPayload: json,
-                zodError: result.error.format()
+                zodError: result.error.format(),
               });
               console.error(`[Validation Failed] Request schema mismatch for ${method} ${url}`);
             }
@@ -52,7 +52,7 @@ export class ApiValidator {
       }
     });
 
-    this.page.on('response', async (response) => {
+    this.page.on("response", async (response) => {
       const request = response.request();
       const url = request.url();
       const method = request.method();
@@ -60,7 +60,7 @@ export class ApiValidator {
       // Only validate OK responses (or you could adjust to validate error schemas too)
       if (response.ok()) {
         const matchedConfig = this.schemas.find(
-          (s) => s.pathPattern.test(url) && s.method === method
+          (s) => s.pathPattern.test(url) && s.method === method,
         );
 
         if (matchedConfig && matchedConfig.responseSchema) {
@@ -71,10 +71,10 @@ export class ApiValidator {
               apiErrors.push({
                 endpoint: url,
                 method,
-                type: 'Response',
+                type: "Response",
                 expectedSchemaName: matchedConfig.schemaName + "Response",
                 actualPayload: json,
-                zodError: result.error.format()
+                zodError: result.error.format(),
               });
               console.error(`[Validation Failed] Response schema mismatch for ${method} ${url}`);
             }

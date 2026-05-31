@@ -1,5 +1,7 @@
 package com.terra.backend.ai;
 
+import com.terra.backend.service.AiSettingsService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -16,22 +18,30 @@ import java.util.Map;
 @Component
 public class OpenAiClient implements LlmClient {
 
-    @Value("${ai.openai.api.url:https://api.openai.com/v1/chat/completions}")
+    @Value("${ai.openai.api.url:https://openrouter.ai/api/v1/chat/completions}")
     private String apiUrl;
 
-    @Value("${ai.openai.api.key:}")
-    private String apiKey;
-
-    @Value("${ai.openai.model:gpt-3.5-turbo}")
+    @Value("${ai.openai.model:openai/gpt-oss-120b:free}")
     private String model;
 
     private final RestTemplate restTemplate = new RestTemplate();
 
+    private AiSettingsService aiSettingsService;
+
+    @Autowired
+    public void setAiSettingsService(AiSettingsService aiSettingsService) {
+        this.aiSettingsService = aiSettingsService;
+    }
+
     @Override
     public String generateResponse(String prompt) {
-        if (apiKey == null || apiKey.trim().isEmpty() || "your_api_key_here".equals(apiKey)) {
-            // Mock mode if no key provided
-            return "{\"actionType\": \"NONE\", \"message\": \"(Mock mode) AI key not configured. I received your prompt but cannot process it.\"}";
+        String apiKey = null;
+        if (aiSettingsService != null) {
+            apiKey = aiSettingsService.getDecryptedApiKey();
+        }
+
+        if (apiKey == null || apiKey.trim().isEmpty()) {
+            return "{\"actionType\": \"NONE\", \"message\": \"(Mock mode) مفتاح API غير مُعدّ. يرجى من المشرف إعداد مفتاح OpenRouter API.\"}";
         }
 
         HttpHeaders headers = new HttpHeaders();
@@ -61,9 +71,9 @@ public class OpenAiClient implements LlmClient {
                 }
             }
         } catch (Exception e) {
-            throw new RuntimeException("Failed to communicate with OpenAI", e);
+            throw new RuntimeException("Failed to communicate with OpenRouter API", e);
         }
-        
-        return "{\"actionType\": \"NONE\", \"message\": \"Failed to parse OpenAI response.\"}";
+
+        return "{\"actionType\": \"NONE\", \"message\": \"Failed to parse OpenRouter response.\"}";
     }
 }

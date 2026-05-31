@@ -1,11 +1,12 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { getAuthToken, removeAuthToken, setAuthToken } from "./api";
+import { wsConnect, wsDisconnect } from "./websocket";
 
 export interface User {
   id: number;
-  username: string;
+  username?: string;
   email: string;
-  fullName: string;
+  fullName?: string;
   role: string;
 }
 
@@ -24,18 +25,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setTokenState] = useState<string | null>(null);
 
   useEffect(() => {
-    // Try to restore session from token + stored user info
+    // Restore session from localStorage on mount
     const storedToken = getAuthToken();
     const storedUser = localStorage.getItem("terra_user");
     if (storedToken && storedUser) {
       try {
         setTokenState(storedToken);
         setUser(JSON.parse(storedUser));
-      } catch (e) {
+        // Reconnect WebSocket for restored sessions
+        wsConnect(storedToken).catch((err) =>
+          console.warn("[Auth] WS reconnect failed:", err),
+        );
+      } catch {
         removeAuthToken();
         localStorage.removeItem("terra_user");
       }
     }
+
+    // Disconnect WebSocket on unmount (app teardown)
+    return () => {
+      wsDisconnect();
+    };
   }, []);
 
   const login = (newToken: string, newUser: User) => {
@@ -43,9 +53,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("terra_user", JSON.stringify(newUser));
     setTokenState(newToken);
     setUser(newUser);
+    // Establish WebSocket connection after login
+    wsConnect(newToken).catch((err) =>
+      console.warn("[Auth] WS connect failed:", err),
+    );
   };
 
   const logout = () => {
+    // Tear down WebSocket before clearing credentials
+    wsDisconnect();
     removeAuthToken();
     localStorage.removeItem("terra_user");
     setTokenState(null);

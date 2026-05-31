@@ -15,7 +15,9 @@ vi.mock("@/components/app-shell", () => ({
 }));
 
 vi.mock("@tanstack/react-router", () => ({
-  Link: ({ children, to }: { children: React.ReactNode; to: string }) => <a href={to}>{children}</a>,
+  Link: ({ children, to }: { children: React.ReactNode; to: string }) => (
+    <a href={to}>{children}</a>
+  ),
   createFileRoute: () => () => ({}),
 }));
 
@@ -24,7 +26,7 @@ describe("DashboardPage integration", () => {
     renderWithProviders(<DashboardPage />);
 
     // Should show loading spinner initially (lucide-react Loader2 is used)
-    // Wait, Loader2 might not be easy to find by text. 
+    // Wait, Loader2 might not be easy to find by text.
     // Let's check for the projects.
 
     await waitFor(() => {
@@ -40,11 +42,11 @@ describe("DashboardPage integration", () => {
     // Override handler for this specific test
     const { http, HttpResponse } = await import("msw");
     const { server } = await import("@/mocks/server");
-    
+
     server.use(
       http.get("http://localhost:8080/api/manager/projects", () => {
         return new HttpResponse(null, { status: 500 });
-      })
+      }),
     );
 
     renderWithProviders(<DashboardPage />);

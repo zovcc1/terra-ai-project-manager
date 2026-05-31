@@ -11,9 +11,5 @@ export function renderWithProviders(ui: React.ReactElement) {
     },
   });
 
-  return rtlRender(
-    <QueryClientProvider client={queryClient}>
-      {ui}
-    </QueryClientProvider>
-  );
+  return rtlRender(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
 }

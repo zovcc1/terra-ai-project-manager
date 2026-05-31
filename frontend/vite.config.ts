@@ -13,6 +13,12 @@ export default defineConfig({
     server: {
       port: 3000,
     },
+    define: {
+      // sockjs-client (and other Node-era libs) reference `global` which
+      // does not exist in browser bundles. `globalThis` is the universal
+      // replacement available in both Node.js and modern browsers.
+      global: "globalThis",
+    },
   },
   tanstackStart: {
     server: { entry: "server" },

@@ -13,16 +13,20 @@ import com.terra.backend.entity.Task;
 import com.terra.backend.entity.User;
 import com.terra.backend.exception.AiProcessingException;
 import com.terra.backend.exception.ResourceNotFoundException;
+import com.terra.backend.exception.UnauthorizedException;
 import com.terra.backend.repository.PendingActionRepository;
 import com.terra.backend.repository.ProjectRepository;
 import com.terra.backend.repository.TaskRepository;
 import com.terra.backend.repository.UserRepository;
+import com.terra.backend.repository.UserSkillRepository;
+import com.terra.backend.entity.ActionType;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,13 +39,15 @@ public class AiProjectManagerService {
     private final TaskRepository taskRepository;
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
+    private final UserSkillRepository userSkillRepository;
     private final PromptTemplateBuilder promptTemplateBuilder;
     private final ObjectMapper objectMapper;
 
-    public AiProjectManagerService(LlmClient llmClient, ContextCompressor contextCompressor, 
+    public AiProjectManagerService(LlmClient llmClient, ContextCompressor contextCompressor,
                                  PendingActionRepository pendingActionRepository, WebSocketService webSocketService,
                                  TaskService taskService, TaskRepository taskRepository,
                                  ProjectRepository projectRepository, UserRepository userRepository,
+                                 UserSkillRepository userSkillRepository,
                                  PromptTemplateBuilder promptTemplateBuilder, ObjectMapper objectMapper) {
         this.llmClient = llmClient;
         this.contextCompressor = contextCompressor;
@@ -51,6 +57,7 @@ public class AiProjectManagerService {
         this.taskRepository = taskRepository;
         this.projectRepository = projectRepository;
         this.userRepository = userRepository;
+        this.userSkillRepository = userSkillRepository;
         this.promptTemplateBuilder = promptTemplateBuilder;
         this.objectMapper = objectMapper;
     }
@@ -60,18 +67,25 @@ public class AiProjectManagerService {
         Project project = projectRepository.findById(projectId).orElseThrow(() -> new ResourceNotFoundException("Project not found"));
 
         if (!isProjectMember(user, project)) {
-            throw new RuntimeException("Access denied: you are not a member of this project");
+            throw new UnauthorizedException("Access denied: you are not a member of this project");
         }
         
         List<Task> tasks = taskRepository.findByProjectId(projectId);
         String compressedBoard = promptTemplateBuilder.buildBoardStateString(tasks);
         List<User> teamMembers = project.getTeam() != null ? new ArrayList<>(project.getTeam().getMembers()) : new ArrayList<>();
         
-        String prompt = promptTemplateBuilder.buildPrompt(compressedBoard, teamMembers, message);
+        Map<Long, List<String>> userSkills = teamMembers.stream()
+            .collect(Collectors.toMap(
+                User::getId,
+                u -> userSkillRepository.findByUserId(u.getId()).stream().map(us -> us.getSkill().getName()).collect(Collectors.toList())
+            ));
+        
+        String prompt = promptTemplateBuilder.buildPrompt(compressedBoard, teamMembers, userSkills, message);
         String responseStr = llmClient.generateResponse(prompt);
+        String cleaned = responseStr.replaceAll("(?s)```json\\s*", "").replaceAll("(?s)```\\s*", "").trim();
         
         try {
-            LlmActionResponse llmAction = objectMapper.readValue(responseStr, LlmActionResponse.class);
+            LlmActionResponse llmAction = objectMapper.readValue(cleaned, LlmActionResponse.class);
             return executeAction(user, project, llmAction, message);
         } catch (Exception e) {
             throw new AiProcessingException("Failed to parse LLM response: " + responseStr, e);
@@ -82,17 +96,23 @@ public class AiProjectManagerService {
         boolean requiresConfirmation = isSensitiveAction(action);
         
         if (requiresConfirmation) {
+            String actionJson = null;
+            try {
+                actionJson = objectMapper.writeValueAsString(action);
+            } catch (Exception e) {
+                throw new AiProcessingException("Failed to serialize action for confirmation", e);
+            }
+
             PendingAction pendingAction = PendingAction.builder()
                     .user(user)
-                    .actionType(action.getActionType())
+                    .actionType(ActionType.valueOf(action.getActionType().toUpperCase()))
                     .targetId(action.getTaskId())
+                    .projectId(project.getId())
+                    .proposedData(actionJson)
                     .naturalLanguageCommand(commandMsg)
                     .status(PendingAction.ActionStatus.PENDING)
                     .expiresAt(LocalDateTime.now().plusMinutes(15))
                     .build();
-            
-            // Store raw action JSON in some generic field if needed, but for now we rely on re-running or storing actionType/targetId
-            // A better architecture would serialize LlmActionResponse into a 'payload' field of PendingAction.
             
             pendingActionRepository.save(pendingAction);
             webSocketService.sendAiPendingToUser(user.getId(), pendingAction);
@@ -104,42 +124,7 @@ public class AiProjectManagerService {
                     .triggerMessage(commandMsg)
                     .build();
         } else {
-            AiCommandResponse.ExecutedAction executed = null;
-            
-            if ("CREATE".equalsIgnoreCase(action.getActionType())) {
-                Task newTask = new Task();
-                newTask.setProject(project);
-                newTask.setTitle(action.getTitle());
-                newTask.setDescription(action.getDescription());
-                newTask.setStatus(parseStatus(action.getStatus(), Task.TaskStatus.TODO));
-                newTask.setPriority(parsePriority(action.getPriority(), Task.Priority.MEDIUM));
-                if (action.getAssigneeId() != null) {
-                    userRepository.findById(action.getAssigneeId()).ifPresent(newTask::setAssignee);
-                }
-                if (action.getDueDate() != null) {
-                    newTask.setDueDate(LocalDate.parse(action.getDueDate()));
-                }
-                Task saved = taskRepository.save(newTask); // Instead of taskService.createTask, as it handles web sockets differently, let's just use service if possible, but taskService needs Task object
-                taskService.createTask(saved);
-                
-                executed = new AiCommandResponse.ExecutedAction("CREATE", saved.getId(), saved.getTitle(), saved.getStatus().name(), saved.getAssignee() != null ? saved.getAssignee().getId() : null);
-            } else if ("UPDATE".equalsIgnoreCase(action.getActionType()) || "MOVE".equalsIgnoreCase(action.getActionType()) || "ASSIGN".equalsIgnoreCase(action.getActionType())) {
-                if (action.getTaskId() != null) {
-                    Task task = taskRepository.findById(action.getTaskId()).orElseThrow(() -> new ResourceNotFoundException("Task not found"));
-                    if (action.getTitle() != null) task.setTitle(action.getTitle());
-                    if (action.getDescription() != null) task.setDescription(action.getDescription());
-                    if (action.getStatus() != null) task.setStatus(parseStatus(action.getStatus(), task.getStatus()));
-                    if (action.getPriority() != null) task.setPriority(parsePriority(action.getPriority(), task.getPriority()));
-                    if (action.getAssigneeId() != null) {
-                        userRepository.findById(action.getAssigneeId()).ifPresent(task::setAssignee);
-                    }
-                    if (action.getDueDate() != null) {
-                        task.setDueDate(LocalDate.parse(action.getDueDate()));
-                    }
-                    taskService.updateTask(task);
-                    executed = new AiCommandResponse.ExecutedAction(action.getActionType(), task.getId(), task.getTitle(), task.getStatus().name(), task.getAssignee() != null ? task.getAssignee().getId() : null);
-                }
-            }
+            AiCommandResponse.ExecutedAction executed = applyLlmAction(project, action);
             
             return AiCommandResponse.builder()
                     .requiresConfirmation(false)
@@ -148,6 +133,60 @@ public class AiProjectManagerService {
                     .triggerMessage(commandMsg)
                     .build();
         }
+    }
+
+    private AiCommandResponse.ExecutedAction applyLlmAction(Project project, LlmActionResponse action) {
+        AiCommandResponse.ExecutedAction executed = null;
+        
+        if ("CREATE".equalsIgnoreCase(action.getActionType())) {
+            Task newTask = new Task();
+            newTask.setProject(project);
+            newTask.setTitle(action.getTaskTitle());
+            newTask.setDescription(action.getDescription());
+            newTask.setStatus(parseStatus(action.getStatus(), Task.TaskStatus.TODO));
+            newTask.setPriority(parsePriority(action.getPriority(), Task.Priority.MEDIUM));
+            if (action.getAssigneeId() != null) {
+                userRepository.findById(action.getAssigneeId()).ifPresent(newTask::setAssignee);
+            }
+            if (action.getDueDate() != null) {
+                try {
+                    newTask.setDueDate(LocalDate.parse(action.getDueDate()));
+                } catch (Exception e) {
+                    // Log error or ignore invalid date
+                }
+            }
+            Task saved = taskRepository.save(newTask);
+
+            executed = new AiCommandResponse.ExecutedAction("CREATE", saved.getId(), saved.getTitle(), saved.getStatus().name(), saved.getAssignee() != null ? saved.getAssignee().getId() : null);
+        } else if ("UPDATE".equalsIgnoreCase(action.getActionType()) || "MOVE".equalsIgnoreCase(action.getActionType()) || "ASSIGN".equalsIgnoreCase(action.getActionType())) {
+            if (action.getTaskId() != null) {
+                Task task = taskRepository.findById(action.getTaskId()).orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+                if (action.getTaskTitle() != null) task.setTitle(action.getTaskTitle());
+                if (action.getDescription() != null) task.setDescription(action.getDescription());
+                if (action.getNewStatus() != null) task.setStatus(parseStatus(action.getNewStatus(), task.getStatus()));
+                else if (action.getStatus() != null) task.setStatus(parseStatus(action.getStatus(), task.getStatus()));
+                if (action.getPriority() != null) task.setPriority(parsePriority(action.getPriority(), task.getPriority()));
+                if (action.getAssigneeId() != null) {
+                    userRepository.findById(action.getAssigneeId()).ifPresent(task::setAssignee);
+                }
+                if (action.getDueDate() != null) {
+                    try {
+                        task.setDueDate(LocalDate.parse(action.getDueDate()));
+                    } catch (Exception e) {
+                        // ignore
+                    }
+                }
+                taskRepository.save(task);
+                executed = new AiCommandResponse.ExecutedAction(action.getActionType(), task.getId(), task.getTitle(), task.getStatus().name(), task.getAssignee() != null ? task.getAssignee().getId() : null);
+            }
+        } else if ("DELETE".equalsIgnoreCase(action.getActionType()) || "DELETE_TASK".equalsIgnoreCase(action.getActionType())) {
+            if (action.getTaskId() != null) {
+                taskService.deleteTask(action.getTaskId());
+                executed = new AiCommandResponse.ExecutedAction(action.getActionType(), action.getTaskId(), "Task Deleted", null, null);
+            }
+        }
+        
+        return executed;
     }
 
     public List<PendingActionResponse> getPendingActions(Long userId) {
@@ -160,17 +199,27 @@ public class AiProjectManagerService {
                 .orElseThrow(() -> new ResourceNotFoundException("Pending action not found"));
                 
         if (!action.getUser().getId().equals(userId)) {
-            throw new RuntimeException("Unauthorized to handle this action");
+            throw new UnauthorizedException("Unauthorized to handle this action");
         }
         
         if (approved) {
             action.setStatus(PendingAction.ActionStatus.APPROVED);
-            if ("DELETE_TASK".equals(action.getActionType()) || "DELETE".equals(action.getActionType())) {
+            if (action.getProposedData() != null) {
+                try {
+                    LlmActionResponse original = objectMapper.readValue(action.getProposedData(), LlmActionResponse.class);
+                    Project project = null;
+                    if (action.getProjectId() != null) {
+                        project = projectRepository.findById(action.getProjectId()).orElse(null);
+                    }
+                    applyLlmAction(project, original);
+                } catch (Exception e) {
+                    throw new AiProcessingException("Failed to replay pending action", e);
+                }
+            } else if ("DELETE_TASK".equals(action.getActionType()) || "DELETE".equals(action.getActionType())) {
                 if (action.getTargetId() != null) {
                     taskService.deleteTask(action.getTargetId());
                 }
             }
-            // For now, only DELETE is sensitive. Add other types as needed.
         } else {
             action.setStatus(PendingAction.ActionStatus.REJECTED);
         }

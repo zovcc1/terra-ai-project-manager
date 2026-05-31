@@ -3,6 +3,11 @@ package com.terra.backend.dto.response;
 import com.terra.backend.entity.Project;
 import lombok.Data;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 @Data
 public class ProjectResponse {
     private Long id;
@@ -15,7 +20,7 @@ public class ProjectResponse {
     private String status;
     private Integer progress;
     private String createdAt;
-
+    private List<TaskResponse> tasks;
     public static ProjectResponse fromEntity(Project project) {
         ProjectResponse r = new ProjectResponse();
         r.setId(project.getId());
@@ -28,6 +33,12 @@ public class ProjectResponse {
         r.setStatus(project.getStatus() != null ? project.getStatus().name() : null);
         r.setProgress(project.getProgress());
         r.setCreatedAt(project.getCreatedAt() != null ? project.getCreatedAt().toString() : null);
+        r.setTasks(Optional.ofNullable(project.getTasks())
+                .orElse(Collections.emptyList())
+                .stream()
+                .map(TaskResponse::fromEntity)
+                .collect(Collectors.toList()));
+
         return r;
     }
 }

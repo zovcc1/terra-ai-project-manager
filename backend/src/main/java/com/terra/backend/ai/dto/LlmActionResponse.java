@@ -13,13 +13,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LlmActionResponse {
-    private String actionType;  // CREATE, MOVE, UPDATE, DELETE, ASSIGN, NONE
-    private Long taskId;        // For MOVE, UPDATE, DELETE, ASSIGN
-    private String title;       // For CREATE
-    private String description; // For CREATE, UPDATE
-    private String status;      // todo, doing, review, done
-    private String priority;    // low, medium, high
-    private Long assigneeId;    // For CREATE, ASSIGN
-    private String dueDate;     // ISO date string
-    private String message;     // Human-readable message from the AI
+    private String actionType;
+    private Long taskId;
+    private String taskTitle;
+    private String description;
+    private String status;
+    private String newStatus;
+    private String priority;
+    private Long assigneeId;
+    private String dueDate;
+    private String message;
 }

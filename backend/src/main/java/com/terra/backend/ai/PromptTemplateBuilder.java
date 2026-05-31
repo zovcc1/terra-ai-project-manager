@@ -16,46 +16,52 @@ import java.util.stream.Collectors;
 public class PromptTemplateBuilder {
 
     private static final String SYSTEM_PROMPT = """
-            You are an AI project manager assistant for a Kanban board application called Terra.
-            You interpret natural language commands and respond with a JSON action.
-            
-            Available action types:
-            - CREATE: Create a new task
-            - MOVE: Move a task to a different column
-            - UPDATE: Update task properties (title, description, priority, assignee, due date)
-            - DELETE: Delete a task
-            - ASSIGN: Assign a task to a team member
-            - NONE: No action needed, just a response message
-            
-            Task statuses: todo, doing, review, done
-            Task priorities: low, medium, high
-            
-            You MUST respond with ONLY valid JSON in this exact format:
-            {
-              "actionType": "CREATE|MOVE|UPDATE|DELETE|ASSIGN|NONE",
-              "taskId": null or number (required for MOVE/UPDATE/DELETE/ASSIGN),
-              "title": "string" (for CREATE),
-              "description": "string" (for CREATE/UPDATE, optional),
-              "status": "todo|doing|review|done" (for CREATE/MOVE),
-              "priority": "low|medium|high" (for CREATE/UPDATE, optional),
-              "assigneeId": number or null (for CREATE/ASSIGN),
-              "dueDate": "YYYY-MM-DD" or null,
-              "message": "Human-readable explanation in Arabic of what you did or will do"
-            }
-            
-            Rules:
-            1. When user says "assign to a frontend developer" or similar, match the skill/role from the team roster.
-            2. Default status for new tasks is "todo".
-            3. Default priority is "medium".
-            4. Always provide a helpful Arabic message explaining the action.
-            5. If you cannot determine the action, use actionType "NONE" with a helpful message.
-            6. When moving tasks, identify them by title match from the board state.
-            """;
+        You are an AI project manager assistant for a Kanban board called Terra.
+        You interpret natural language commands and respond with a JSON action.
+
+        Available action types:
+        - CREATE: Create a new task
+        - MOVE: Move a task to a different column
+        - UPDATE: Update task properties
+        - DELETE: Delete a task
+        - ASSIGN: Assign a task to a team member
+        - NONE: No action needed
+
+        Task statuses: todo, doing, review, done
+        Task priorities: low, medium, high
+
+        You MUST respond with ONLY valid JSON matching EXACTLY one of these schemas:
+
+        CREATE:
+        {"actionType":"CREATE","taskTitle":"string","description":"string","status":"todo","priority":"medium","assigneeId":null,"message":"string"}
+
+        MOVE:
+        {"actionType":"MOVE","taskId":1,"newStatus":"doing","message":"string"}
+
+        UPDATE:
+        {"actionType":"UPDATE","taskId":1,"taskTitle":"string","description":"string","priority":"medium","assigneeId":1,"message":"string"}
+
+        DELETE:
+        {"actionType":"DELETE","taskId":1,"message":"string"}
+
+        ASSIGN:
+        {"actionType":"ASSIGN","taskId":1,"assigneeId":1,"message":"string"}
+
+        NONE:
+        {"actionType":"NONE","message":"string"}
+
+        Rules:
+        1. Use assigneeId from TEAM ROSTER only. Never invent IDs.
+        2. Use taskId from BOARD STATE only. Never invent IDs.
+        3. Default status for new tasks is "todo".
+        4. Default priority is "medium".
+        5. Always write message in Arabic.
+        6. Do NOT use markdown. Start with { and end with }.""";
 
     /**
      * Build the full prompt with board context and user command.
      */
-    public String buildPrompt(String compressedBoardState, List<User> teamMembers, String userCommand) {
+    public String buildPrompt(String compressedBoardState, List<User> teamMembers, Map<Long, List<String>> userSkills, String userCommand) {
         StringBuilder prompt = new StringBuilder();
         prompt.append("SYSTEM:\n").append(SYSTEM_PROMPT).append("\n\n");
 
@@ -64,8 +70,9 @@ public class PromptTemplateBuilder {
         if (teamMembers != null && !teamMembers.isEmpty()) {
             prompt.append("TEAM ROSTER:\n");
             for (User member : teamMembers) {
-                prompt.append(String.format("- ID: %d, Name: %s, Role: %s\n",
-                        member.getId(), member.getFullName(), member.getRole().name()));
+                String skills = userSkills.getOrDefault(member.getId(), List.of()).toString();
+                prompt.append(String.format("- ID: %d, Name: %s, Role: %s, Skills: %s\n",
+                        member.getId(), member.getFullName(), member.getRole().name(), skills));
             }
             prompt.append("\n");
         }

@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface AiSuggestionLogRepository extends JpaRepository<AiSuggestionLog, Long> {
     List<AiSuggestionLog> findByProjectIdAndIsDismissedFalse(Long projectId);
+    List<AiSuggestionLog> findBySuggestionTypeAndIsDismissedFalse(String suggestionType);
 }

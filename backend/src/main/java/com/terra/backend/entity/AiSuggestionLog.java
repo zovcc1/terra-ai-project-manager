@@ -25,6 +25,14 @@ public class AiSuggestionLog {
     @Column(columnDefinition = "JSON")
     private String taskIds;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User triggeredBy;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "pending_action_id")
+    private PendingAction pendingAction;
+
     private String message;
     private Boolean isDismissed;
     private LocalDateTime createdAt;

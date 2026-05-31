@@ -36,6 +36,7 @@ const personas = [
     desc: "إدارة ملفك الشخصي ومتابعة نشاطك.",
     icon: User,
   },
+  
 ];
 
 function Index() {

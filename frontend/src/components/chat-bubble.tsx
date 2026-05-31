@@ -1,11 +1,13 @@
-import { useState, useRef, useEffect } from "react";
-import { MessageCircle, X, Send, CheckCircle, XCircle } from "lucide-react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { MessageCircle, X, Send, CheckCircle, XCircle, Sparkles, Wand2 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { sendAiCommand, confirmAiAction, AiCommandResponse } from "@/lib/api";
+import { sendAiCommand, confirmAiAction } from "@/lib/api";
+import type { AiCommandResponse, PendingAction } from "@/lib/api";
 import { toast } from "sonner";
+import { subscribeAiPending, wsIsConnected } from "@/lib/websocket";
 
 type Message = {
   id: string;
@@ -13,6 +15,8 @@ type Message = {
   who: string;
   text: string;
   time: string;
+  isAction?: boolean;
+  actionType?: string;
   pendingAction?: {
     actionId: number;
     resolved?: boolean;
@@ -20,35 +24,60 @@ type Message = {
   };
 };
 
-export function ChatBubble({ persona }: { persona: string }) {
+const WELCOME_MSG: Message = {
+  id: "welcome",
+  from: "them",
+  who: "ت",
+  text: "مرحباً! أنا المساعد الذكي لتيرّا. يمكنني مساعدتك في إدارة مهام لوحة كانبان. جرّب قول:\n\n• \"أضف مهمة جديدة بعنوان تصميم الصفحة\"\n• \"انقل مهمة Setup Database إلى مكتمل\"\n• \"حذف مهمة تحسين الأداء\"\n• \"عيّن مهمة كتابة المحتوى للعضو رقم 2\"\n• \"حلل حالة المشروع\"",
+  time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+};
+
+export function ChatBubble({ persona, projectId }: { persona: string; projectId?: number }) {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "welcome",
-      from: "them",
-      who: "ت",
-      text: "مرحباً! أنا المساعد الذكي الخاص بك. كيف يمكنني مساعدتك اليوم في إدارة مشاريعك؟",
-      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([WELCOME_MSG]);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Auto scroll to bottom
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages, open]);
 
+  // --- WebSocket: listen for AI pending actions ---
+  useEffect(() => {
+    if (!wsIsConnected()) return;
+
+    const unsubscribe = subscribeAiPending((action: PendingAction) => {
+      const aiMsg: Message = {
+        id: `ws-${action.id}-${Date.now()}`,
+        from: "them",
+        who: "ت",
+        text: `طلب إجراء جديد: ${action.naturalLanguageCommand || action.actionType}\n\nيرجى مراجعة والإقرار.`,
+        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        isAction: true,
+        actionType: action.actionType,
+        pendingAction: { actionId: action.id },
+      };
+      setMessages((prev) => [...prev, aiMsg]);
+      toast.info("طلب إجراء جديد من المساعد الذكي");
+    });
+
+    return unsubscribe;
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || loading) return;
+    if (!projectId) {
+      toast.error("خطأ: لم يتم تحديد مشروع.");
+      return;
+    }
 
     const userMessage = input.trim();
     setInput("");
-    
+
     const newMsg: Message = {
       id: Date.now().toString(),
       from: "me",
@@ -61,19 +90,36 @@ export function ChatBubble({ persona }: { persona: string }) {
     setLoading(true);
 
     try {
-      // Hardcoded projectId = 1 for demo purposes. In a real app, this would be context-aware.
-      const response = await sendAiCommand({ message: userMessage, projectId: 1 });
-      
+      const response: AiCommandResponse = await sendAiCommand({
+        message: userMessage,
+        projectId: projectId,
+      });
+
       const aiMsg: Message = {
         id: (Date.now() + 1).toString(),
         from: "them",
         who: "ت",
         text: response.aiMessage || "تم استلام الطلب.",
         time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        isAction: !!response.executedAction,
+        actionType: response.executedAction?.actionType,
       };
 
       if (response.requiresConfirmation && response.actionId) {
         aiMsg.pendingAction = { actionId: response.actionId };
+      }
+
+      // If action was executed, show a summary
+      if (response.executedAction) {
+        const a = response.executedAction;
+        const actionLabels: Record<string, string> = {
+          CREATE: "✅ تم إنشاء مهمة",
+          UPDATE: "✏️ تم تحديث مهمة",
+          MOVE: "↕️ تم نقل مهمة",
+          DELETE: "🗑️ تم حذف مهمة",
+          ASSIGN: "👤 تم تعيين مهمة",
+        };
+        aiMsg.text = `${actionLabels[a.actionType] || a.actionType}: «${a.taskTitle || a.title || "—"}»\n${response.aiMessage || ""}`;
       }
 
       setMessages((prev) => [...prev, aiMsg]);
@@ -85,7 +131,7 @@ export function ChatBubble({ persona }: { persona: string }) {
           id: (Date.now() + 1).toString(),
           from: "them",
           who: "ت",
-          text: "عذراً، حدث خطأ أثناء معالجة طلبك.",
+          text: "عذراً، حدث خطأ أثناء معالجة طلبك. تأكد من إعداد مفتاح API.",
           time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         },
       ]);
@@ -97,18 +143,21 @@ export function ChatBubble({ persona }: { persona: string }) {
   const handleConfirm = async (messageId: string, actionId: number, approved: boolean) => {
     try {
       await confirmAiAction(actionId, approved);
-      toast.success(approved ? "تم التأكيد بنجاح" : "تم إلغاء الإجراء");
-      
+      toast.success(approved ? "تم تأكيد الإجراء بنجاح" : "تم إلغاء الإجراء");
+
       setMessages((prev) =>
         prev.map((msg) => {
           if (msg.id === messageId && msg.pendingAction) {
             return {
               ...msg,
               pendingAction: { ...msg.pendingAction, resolved: true, approved },
+              text: approved
+                ? `${msg.text}\n\n✅ تم التأكيد وتنفيذ الإجراء.`
+                : `${msg.text}\n\n❌ تم الإلغاء.`,
             };
           }
           return msg;
-        })
+        }),
       );
     } catch (err: any) {
       toast.error(err.message || "حدث خطأ أثناء التأكيد");
@@ -145,13 +194,16 @@ export function ChatBubble({ persona }: { persona: string }) {
           </div>
 
           {/* Messages */}
-          <div ref={scrollRef} className="flex max-h-80 flex-col gap-3 overflow-y-auto bg-background/40 px-4 py-4">
+          <div
+            ref={scrollRef}
+            className="flex max-h-80 flex-col gap-3 overflow-y-auto bg-background/40 px-4 py-4"
+          >
             {messages.map((m) => (
               <div
                 key={m.id}
                 className={cn(
                   "flex items-end gap-2",
-                  m.from === "me" ? "flex-row-reverse" : "flex-row"
+                  m.from === "me" ? "flex-row-reverse" : "flex-row",
                 )}
               >
                 <Avatar className="h-7 w-7 shrink-0">
@@ -160,24 +212,40 @@ export function ChatBubble({ persona }: { persona: string }) {
                       "text-[10px]",
                       m.from === "me"
                         ? "bg-primary text-primary-foreground"
-                        : "bg-accent/20 text-accent-foreground"
+                        : m.isAction
+                          ? "bg-warning/20 text-warning-foreground"
+                          : "bg-accent/20 text-accent-foreground",
                     )}
                   >
-                    {m.who.slice(0, 1)}
+                    {m.from === "me" ? m.who.slice(0, 1) : m.isAction ? "⚡" : "ت"}
                   </AvatarFallback>
                 </Avatar>
-                <div className={cn("flex max-w-[85%] flex-col", m.from === "me" ? "items-start" : "items-end")}>
+                <div
+                  className={cn(
+                    "flex max-w-[85%] flex-col",
+                    m.from === "me" ? "items-start" : "items-end",
+                  )}
+                >
                   <div
                     className={cn(
-                      "rounded-2xl px-3.5 py-2 text-sm leading-relaxed shadow-sm",
+                      "rounded-2xl px-3.5 py-2 text-sm leading-relaxed shadow-sm whitespace-pre-line",
                       m.from === "me"
                         ? "rounded-bl-sm bg-primary text-primary-foreground"
-                        : "rounded-br-sm bg-card text-card-foreground border border-border"
+                        : m.isAction
+                          ? "rounded-br-sm bg-warning/10 text-card-foreground border border-warning/30"
+                          : "rounded-br-sm bg-card text-card-foreground border border-border",
                     )}
                   >
+                    {/* Action summary line */}
+                    {m.isAction && m.actionType && (
+                      <p className="mb-1 flex items-center gap-1.5 text-xs font-semibold">
+                        <Wand2 className="h-3.5 w-3.5 text-primary" />
+                        {actionTypeLabel(m.actionType)}
+                      </p>
+                    )}
                     {m.text}
-                    
-                    {/* Pending Action UI */}
+
+                    {/* Pending Action UI — confirm/cancel buttons */}
                     {m.pendingAction && !m.pendingAction.resolved && (
                       <div className="mt-3 flex gap-2 border-t border-border/50 pt-3">
                         <Button
@@ -200,9 +268,9 @@ export function ChatBubble({ persona }: { persona: string }) {
                         </Button>
                       </div>
                     )}
-                    
-                    {/* Resolved Action UI */}
-                    {m.pendingAction && m.pendingAction.resolved && (
+
+                    {/* Resolved badge */}
+                    {m.pendingAction?.resolved && (
                       <div className="mt-2 text-xs font-semibold opacity-80">
                         {m.pendingAction.approved ? "✅ تم التأكيد" : "❌ تم الإلغاء"}
                       </div>
@@ -214,12 +282,17 @@ export function ChatBubble({ persona }: { persona: string }) {
             ))}
             {loading && (
               <div className="flex items-end gap-2 flex-row">
-                 <Avatar className="h-7 w-7 shrink-0">
-                  <AvatarFallback className="bg-accent/20 text-accent-foreground text-[10px]">ت</AvatarFallback>
+                <Avatar className="h-7 w-7 shrink-0">
+                  <AvatarFallback className="bg-accent/20 text-accent-foreground text-[10px]">
+                    ت
+                  </AvatarFallback>
                 </Avatar>
                 <div className="flex max-w-[75%] flex-col items-end">
                   <div className="rounded-2xl rounded-br-sm bg-card text-card-foreground border border-border px-3.5 py-2 text-sm">
-                    <span className="animate-pulse">يكتب...</span>
+                    <span className="animate-pulse flex items-center gap-2">
+                      <Sparkles className="h-3.5 w-3.5 animate-spin text-primary" />
+                      جاري المعالجة...
+                    </span>
                   </div>
                 </div>
               </div>
@@ -231,15 +304,24 @@ export function ChatBubble({ persona }: { persona: string }) {
             onSubmit={handleSubmit}
             className="flex items-center gap-2 border-t border-border bg-card px-3 py-3"
           >
-            <Input 
+            <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="اكتب رسالتك للمساعد الذكي…" 
-              className="bg-background text-right" 
+              placeholder="مثال: أضف مهمة جديدة..."
+              className="bg-background text-right"
               disabled={loading}
             />
-            <Button type="submit" size="icon" className="shrink-0" disabled={loading || !input.trim()}>
-              <Send className="h-4 w-4" />
+            <Button
+              type="submit"
+              size="icon"
+              className="shrink-0"
+              disabled={loading || !input.trim()}
+            >
+              {loading ? (
+                <Sparkles className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
             </Button>
           </form>
         </div>
@@ -249,12 +331,30 @@ export function ChatBubble({ persona }: { persona: string }) {
         onClick={() => setOpen((o) => !o)}
         className={cn(
           "group relative grid h-14 w-14 cursor-pointer place-items-center rounded-full bg-primary text-primary-foreground shadow-xl transition-transform hover:scale-105 active:scale-95",
-          "cta-glow"
+          "cta-glow",
+          open && "ring-4 ring-primary/30",
         )}
         aria-label="فتح المحادثة"
       >
         {open ? <X className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}
+        {!open && (
+          <span className="absolute -top-1 -left-1 grid h-5 w-5 place-items-center rounded-full bg-warning text-[10px] text-warning-foreground">
+            <Sparkles className="h-3 w-3" />
+          </span>
+        )}
       </button>
     </div>
   );
+}
+
+function actionTypeLabel(type: string): string {
+  const map: Record<string, string> = {
+    CREATE: "إنشاء مهمة",
+    UPDATE: "تحديث مهمة",
+    MOVE: "نقل مهمة",
+    DELETE: "حذف مهمة",
+    ASSIGN: "تعيين مهمة",
+    NONE: "بدون إجراء",
+  };
+  return map[type?.toUpperCase()] || type;
 }

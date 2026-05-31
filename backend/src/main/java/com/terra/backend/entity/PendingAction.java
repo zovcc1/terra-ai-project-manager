@@ -20,8 +20,10 @@ public class PendingAction {
     @JoinColumn(name = "user_id")
     private User user;
 
-    private String actionType;
+    @Enumerated(EnumType.STRING)
+    private ActionType actionType;
     private Long targetId;
+    private Long projectId;
 
     @Column(columnDefinition = "JSON")
     private String proposedData;

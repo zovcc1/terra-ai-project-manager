@@ -1,3 +1,4 @@
+// Team.java
 package com.terra.backend.entity;
 
 import jakarta.persistence.*;
@@ -6,7 +7,9 @@ import java.time.LocalDateTime;
 import java.util.Set;
 
 @Entity
-@Table(name = "teams")
+@Table(name = "teams", uniqueConstraints = {
+        @UniqueConstraint(columnNames = "name")
+})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -28,9 +31,9 @@ public class Team {
 
     @ManyToMany
     @JoinTable(
-        name = "team_members",
-        joinColumns = @JoinColumn(name = "team_id"),
-        inverseJoinColumns = @JoinColumn(name = "user_id")
+            name = "team_members",
+            joinColumns = @JoinColumn(name = "team_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     private Set<User> members;
 
