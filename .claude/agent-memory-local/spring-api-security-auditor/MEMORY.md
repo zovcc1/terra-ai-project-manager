@@ -1,1 +1,0 @@
-- [Project security patterns](project_security_patterns.md) — recurring vulnerabilities and architecture decisions in the Terra backend

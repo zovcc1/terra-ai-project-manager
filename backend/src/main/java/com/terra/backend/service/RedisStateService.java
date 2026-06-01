@@ -3,7 +3,10 @@ package com.terra.backend.service;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Service
 public class RedisStateService {
@@ -15,7 +18,7 @@ public class RedisStateService {
     private static final String VERSION_PREFIX = "auth:version:";
     private static final String EPHEMERAL_PREFIX = "auth:ephemeral:";
     private static final String RATE_LIMIT_PREFIX = "ratelimit:";
-
+    private static final String CONVERSATION_KEY_PREFIX = "ai:conv:";
     public RedisStateService(StringRedisTemplate redisTemplate) {
         this.redisTemplate = redisTemplate;
     }
@@ -69,4 +72,30 @@ public class RedisStateService {
         }
         return count != null && count > limit;
     }
+
+    public void addConversationMessage(Long userId, Long projectId, String role, String content) {
+        String key = CONVERSATION_KEY_PREFIX + userId + ":" + projectId;
+        String message = System.currentTimeMillis() + "|" + role + "|" + content;
+        redisTemplate.opsForList().rightPush(key, message);
+        redisTemplate.expire(key, Duration.ofMinutes(30)); // TTL 30 min
+        // Keep only last 20 messages to avoid overflow
+        Long size = redisTemplate.opsForList().size(key);
+        if (size != null && size > 20) {
+            redisTemplate.opsForList().leftPop(key);
+        }
+    }
+
+    public List<String[]> getConversationHistory(Long userId, Long projectId, int limit) {
+        String key = CONVERSATION_KEY_PREFIX + userId + ":" + projectId;
+        List<String> messages = redisTemplate.opsForList().range(key, -limit, -1);
+        if (messages == null) return List.of();
+        return messages.stream()
+                .map(msg -> msg.split("\\|", 3))
+                .filter(parts -> parts.length == 3)
+                .map(parts -> new String[]{parts[1], parts[2]}) // [role, content]
+                .collect(Collectors.toList());
+    }
+
+
+
 }

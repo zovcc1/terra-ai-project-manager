@@ -100,60 +100,44 @@ export function AppShell({
   });
 
   // WebSocket subscription for real‑time notifications
-const socketRef = useRef<WebSocket | null>(null);
+
+const unsubscribeRef = useRef<(() => void) | null>(null);
+const subscribedRef = useRef(false);
 
 useEffect(() => {
-  if (!token) return;
+  if (!token || subscribedRef.current) return;
 
-  // إذا كان هناك اتصال سابق ما زال مفتوحاً، لا تنشئ غيره
-  if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-    console.log('🔁 اتصال موجود مسبقاً، تخطي');
-    return;
-  }
+  let cancelled = false;
 
-  // أغلق أي اتصال سابق ليس مفتوحاً
-  if (socketRef.current) {
-    socketRef.current.close();
-  }
-
-  const wsUrl = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/ws?token=${token}`;
-  const socket = new WebSocket(wsUrl);
-  socketRef.current = socket;
-
-  socket.onopen = () => {
-    console.log('✅ WebSocket مفتوح', socket.readyState);
-    // أرسل رسالة اشتراك إن احتاج الخادم
-    // socket.send(JSON.stringify({ type: 'subscribe', channel: 'notifications' }));
-  };
-
-  socket.onmessage = (event) => {
+  const init = async () => {
     try {
-      const notification = JSON.parse(event.data);
-      console.log('📩 إشعار:', notification);
-      // تحديث الكاش
-      queryClient.setQueryData(['unreadNotifications'], (old: any) => {
-        if (!old) return [notification];
-        return old.some(n => n.id === notification.id) ? old : [notification, ...old];
+      await wsConnect(token);
+      if (cancelled) return;
+
+      unsubscribeRef.current = subscribeNotifications((notification) => {
+        queryClient.setQueryData(['unreadNotifications'], (old: any[]) => {
+          if (!old) return [notification];
+          return old.some(n => n.id === notification.id) ? old : [notification, ...old];
+        });
+        queryClient.setQueryData(['recentNotifications'], (old: any[]) => {
+          if (!old) return [notification];
+          return old.some(n => n.id === notification.id) ? old : [notification, ...old];
+        });
       });
-      queryClient.setQueryData(['recentNotifications'], (old: any) => {
-        if (!old) return [notification];
-        return old.some(n => n.id === notification.id) ? old : [notification, ...old];
-      });
-    } catch (e) {
-      console.error('خطأ في تحليل رسالة WebSocket', e);
+      subscribedRef.current = true;
+    } catch (err) {
+      console.error('STOMP connection error', err);
     }
   };
 
-  socket.onerror = (e) => console.error('WebSocket error', e);
-  socket.onclose = (e) => console.log('WebSocket closed', e.code, e.reason);
+  init();
 
-  // cleanup: لا يُستدعى إلا عند تغيير التوكن أو إلغاء تحميل المكون
   return () => {
-    console.log('Cleaning up WebSocket');
-    socket.close();
-    socketRef.current = null;
+    cancelled = true;
+    unsubscribeRef.current?.();
+    subscribedRef.current = false;
   };
-}, [token]); // تبعية واحدة فقط
+}, [token, queryClient]);
 
   const unreadCount = unreadList?.filter((n) => !n.isRead).length ?? 0;
 

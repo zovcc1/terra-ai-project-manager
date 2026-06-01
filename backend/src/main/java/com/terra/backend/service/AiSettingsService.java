@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Base64;
 
 @Service
@@ -34,7 +36,19 @@ public class AiSettingsService {
                 .defaultModel(settings.getDefaultModel())
                 .build();
     }
-
+    // Add this method to AiSettingsService
+    public String getActiveApiKey() {
+        AiSettings settings = repository.findById(1L).orElseThrow(() ->
+                new RuntimeException("AI settings not configured. Please set up the API key."));
+        if (!settings.isEnabled()) {
+            throw new RuntimeException("AI features are disabled. Enable them in admin settings.");
+        }
+        String key = decrypt(settings.getApiKeyEncrypted());
+        if (key == null || key.isBlank()) {
+            throw new RuntimeException("API key is missing or could not be decrypted.");
+        }
+        return key;
+    }
     public void updateSettings(AiSettingsRequest request) {
         AiSettings settings = repository.findById(1L).orElse(new AiSettings());
         settings.setId(1L);
@@ -63,12 +77,13 @@ public class AiSettingsService {
     private String decrypt(String encryptedValue) {
         if (encryptedValue == null) return null;
         try {
-            SecretKeySpec keySpec = new SecretKeySpec(secretKey.substring(0, 16).getBytes(), ALGORITHM);
+            SecretKeySpec keySpec = new SecretKeySpec(secretKey.substring(0, 16).getBytes(StandardCharsets.UTF_8), ALGORITHM);
             Cipher cipher = Cipher.getInstance(TRANSFORMATION);
             cipher.init(Cipher.DECRYPT_MODE, keySpec);
-            return new String(cipher.doFinal(Base64.getDecoder().decode(encryptedValue)));
+            byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(encryptedValue));
+            return new String(decryptedBytes, StandardCharsets.UTF_8);
         } catch (Exception e) {
-            return null;
+            throw new RuntimeException(e.getMessage());
         }
     }
 
@@ -78,7 +93,11 @@ public class AiSettingsService {
     public String getDecryptedApiKey() {
         AiSettings settings = repository.findById(1L).orElse(new AiSettings());
         if (!settings.isEnabled()) return null;
-        return decrypt(settings.getApiKeyEncrypted());
+        String encrypted = settings.getApiKeyEncrypted();
+        String decrypted = decrypt(encrypted);
+        System.out.println("Decrypted API Key: " + decrypted);
+
+        return decrypted;
     }
 
     private String maskApiKey(String key) {

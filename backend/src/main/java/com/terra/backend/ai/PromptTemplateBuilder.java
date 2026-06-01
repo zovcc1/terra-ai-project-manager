@@ -61,7 +61,7 @@ public class PromptTemplateBuilder {
     /**
      * Build the full prompt with board context and user command.
      */
-    public String buildPrompt(String compressedBoardState, List<User> teamMembers, Map<Long, List<String>> userSkills, String userCommand) {
+    public String buildPrompt(String compressedBoardState, List<User> teamMembers, String userCommand,List<String[]> conversationHistory) {
         StringBuilder prompt = new StringBuilder();
         prompt.append("SYSTEM:\n").append(SYSTEM_PROMPT).append("\n\n");
 
@@ -70,11 +70,20 @@ public class PromptTemplateBuilder {
         if (teamMembers != null && !teamMembers.isEmpty()) {
             prompt.append("TEAM ROSTER:\n");
             for (User member : teamMembers) {
-                String skills = userSkills.getOrDefault(member.getId(), List.of()).toString();
-                prompt.append(String.format("- ID: %d, Name: %s, Role: %s, Skills: %s\n",
-                        member.getId(), member.getFullName(), member.getRole().name(), skills));
+                prompt.append(String.format("- ID: %d, Name: %s, Role: %s",
+                        member.getId(), member.getFullName(), member.getRole().name()));
             }
             prompt.append("\n");
+        }
+        if (conversationHistory != null && !conversationHistory.isEmpty()) {
+            prompt.append("--- سجل المحادثة السابقة ---\n");
+            for (String[] turn : conversationHistory) {
+                String role = turn[0];
+                String content = turn[1];
+                if ("user".equals(role)) prompt.append("المستخدم: ").append(content).append("\n");
+                else if ("assistant".equals(role)) prompt.append("المساعد: ").append(content).append("\n");
+            }
+            prompt.append("--- نهاية السجل ---\n\n");
         }
 
         prompt.append("USER COMMAND:\n").append(userCommand);

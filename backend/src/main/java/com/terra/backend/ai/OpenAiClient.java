@@ -26,20 +26,17 @@ public class OpenAiClient implements LlmClient {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
-    private AiSettingsService aiSettingsService;
+    private  final AiSettingsService aiSettingsService;
 
-    @Autowired
-    public void setAiSettingsService(AiSettingsService aiSettingsService) {
+    public OpenAiClient(AiSettingsService aiSettingsService) {
         this.aiSettingsService = aiSettingsService;
     }
 
+
+
     @Override
     public String generateResponse(String prompt) {
-        String apiKey = null;
-        if (aiSettingsService != null) {
-            apiKey = aiSettingsService.getDecryptedApiKey();
-        }
-
+        String apiKey = aiSettingsService.getDecryptedApiKey();
         if (apiKey == null || apiKey.trim().isEmpty()) {
             return "{\"actionType\": \"NONE\", \"message\": \"(Mock mode) مفتاح API غير مُعدّ. يرجى من المشرف إعداد مفتاح OpenRouter API.\"}";
         }

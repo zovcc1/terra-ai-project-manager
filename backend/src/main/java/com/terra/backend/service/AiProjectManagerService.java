@@ -42,13 +42,14 @@ public class AiProjectManagerService {
     private final UserSkillRepository userSkillRepository;
     private final PromptTemplateBuilder promptTemplateBuilder;
     private final ObjectMapper objectMapper;
+    private final RedisStateService redisStateService;
 
     public AiProjectManagerService(LlmClient llmClient, ContextCompressor contextCompressor,
-                                 PendingActionRepository pendingActionRepository, WebSocketService webSocketService,
-                                 TaskService taskService, TaskRepository taskRepository,
-                                 ProjectRepository projectRepository, UserRepository userRepository,
-                                 UserSkillRepository userSkillRepository,
-                                 PromptTemplateBuilder promptTemplateBuilder, ObjectMapper objectMapper) {
+                                   PendingActionRepository pendingActionRepository, WebSocketService webSocketService,
+                                   TaskService taskService, TaskRepository taskRepository,
+                                   ProjectRepository projectRepository, UserRepository userRepository,
+                                   UserSkillRepository userSkillRepository,
+                                   PromptTemplateBuilder promptTemplateBuilder, ObjectMapper objectMapper, RedisStateService redisStateService) {
         this.llmClient = llmClient;
         this.contextCompressor = contextCompressor;
         this.pendingActionRepository = pendingActionRepository;
@@ -60,35 +61,62 @@ public class AiProjectManagerService {
         this.userSkillRepository = userSkillRepository;
         this.promptTemplateBuilder = promptTemplateBuilder;
         this.objectMapper = objectMapper;
+        this.redisStateService = redisStateService;
     }
 
     public AiCommandResponse processCommand(Long userId, Long projectId, String message) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        Project project = projectRepository.findById(projectId).orElseThrow(() -> new ResourceNotFoundException("Project not found"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
 
         if (!isProjectMember(user, project)) {
             throw new UnauthorizedException("Access denied: you are not a member of this project");
         }
-        
+
+        List<String[]> history = redisStateService.getConversationHistory(userId, projectId, 10);
         List<Task> tasks = taskRepository.findByProjectId(projectId);
         String compressedBoard = promptTemplateBuilder.buildBoardStateString(tasks);
-        List<User> teamMembers = project.getTeam() != null ? new ArrayList<>(project.getTeam().getMembers()) : new ArrayList<>();
-        
-        Map<Long, List<String>> userSkills = teamMembers.stream()
-            .collect(Collectors.toMap(
-                User::getId,
-                u -> userSkillRepository.findByUserId(u.getId()).stream().map(us -> us.getSkill().getName()).collect(Collectors.toList())
-            ));
-        
-        String prompt = promptTemplateBuilder.buildPrompt(compressedBoard, teamMembers, userSkills, message);
-        String responseStr = llmClient.generateResponse(prompt);
+        List<User> teamMembers = project.getTeam() != null ?
+                new ArrayList<>(project.getTeam().getMembers()) : new ArrayList<>();
+        String prompt = promptTemplateBuilder.buildPrompt(compressedBoard, teamMembers, message,history);
+
+
+        String responseStr;
+        try {
+            responseStr = llmClient.generateResponse(prompt);
+        } catch (Exception e) {
+            return AiCommandResponse.builder()
+                    .requiresConfirmation(false)
+                    .aiMessage("error with processing command" + e.getMessage())
+                    .triggerMessage(message)
+                    .build();
+        }
+        redisStateService.addConversationMessage(userId, projectId, "user", message);
+        redisStateService.addConversationMessage(userId, projectId, "assistant", responseStr);
+
         String cleaned = responseStr.replaceAll("(?s)```json\\s*", "").replaceAll("(?s)```\\s*", "").trim();
-        
+
+        // إذا كان الرد لا يشبه JSON، نعيده كما هو للمعاينة
+        if (!cleaned.startsWith("{") && !cleaned.startsWith("[")) {
+            return AiCommandResponse.builder()
+                    .requiresConfirmation(false)
+                    .aiMessage("الرد من الذكاء الاصطناعي (غير JSON): " + cleaned)
+                    .triggerMessage(message)
+                    .build();
+        }
+
         try {
             LlmActionResponse llmAction = objectMapper.readValue(cleaned, LlmActionResponse.class);
             return executeAction(user, project, llmAction, message);
         } catch (Exception e) {
-            throw new AiProcessingException("Failed to parse LLM response: " + responseStr, e);
+            // فشل تحليل JSON
+            e.printStackTrace();
+            return AiCommandResponse.builder()
+                    .requiresConfirmation(false)
+                    .aiMessage("تم استلام رد غير متوقع من الذكاء الاصطناعي. الرد كان: " + cleaned)
+                    .triggerMessage(message)
+                    .build();
         }
     }
 
