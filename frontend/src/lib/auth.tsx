@@ -13,6 +13,7 @@ export interface User {
 interface AuthContextType {
   user: User | null;
   token: string | null;
+  isLoading: boolean;
   login: (token: string, user: User) => void;
   logout: () => void;
   isAuthenticated: boolean;
@@ -20,56 +21,68 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+function getStoredUser(): User | null {
+  if (typeof window === "undefined") return null;
+  const stored = localStorage.getItem("terra_user");
+  return stored ? JSON.parse(stored) : null;
+}
+
+function getStoredToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return getAuthToken();
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setTokenState] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(() => getStoredUser());
+  const [token, setToken] = useState<string | null>(() => getStoredToken());
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Restore session from localStorage on mount
-    const storedToken = getAuthToken();
-    const storedUser = localStorage.getItem("terra_user");
-    if (storedToken && storedUser) {
-      try {
-        setTokenState(storedToken);
-        setUser(JSON.parse(storedUser));
-        // Reconnect WebSocket for restored sessions
-        wsConnect(storedToken).catch((err) =>
-          console.warn("[Auth] WS reconnect failed:", err),
-        );
-      } catch {
-        removeAuthToken();
-        localStorage.removeItem("terra_user");
-      }
+    if (token) {
+      wsConnect(token).catch((err) =>
+        console.warn("[Auth] WebSocket connection failed:", err)
+      );
     }
+    setIsLoading(false);
 
-    // Disconnect WebSocket on unmount (app teardown)
     return () => {
       wsDisconnect();
     };
-  }, []);
+  }, [token]);
 
   const login = (newToken: string, newUser: User) => {
     setAuthToken(newToken);
-    localStorage.setItem("terra_user", JSON.stringify(newUser));
-    setTokenState(newToken);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("terra_user", JSON.stringify(newUser));
+    }
+    setToken(newToken);
     setUser(newUser);
-    // Establish WebSocket connection after login
     wsConnect(newToken).catch((err) =>
-      console.warn("[Auth] WS connect failed:", err),
+      console.warn("[Auth] WebSocket connection failed:", err)
     );
   };
 
   const logout = () => {
-    // Tear down WebSocket before clearing credentials
     wsDisconnect();
     removeAuthToken();
-    localStorage.removeItem("terra_user");
-    setTokenState(null);
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("terra_user");
+    }
+    setToken(null);
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated: !!token }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        token,
+        isLoading,
+        login,
+        logout,
+        isAuthenticated: !!token,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

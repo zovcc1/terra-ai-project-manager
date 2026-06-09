@@ -10,7 +10,9 @@ import {
 
 import appCss from "../styles.css?url";
 import { Toaster } from "@/components/ui/sonner";
+import { AuthProvider, useAuth } from "@/lib/auth";
 
+// ========== 404 Not Found ==========
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4" dir="rtl">
@@ -33,6 +35,7 @@ function NotFoundComponent() {
   );
 }
 
+// ========== Error Boundary ==========
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
@@ -66,6 +69,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   );
 }
 
+// ========== Root Route ==========
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
     meta: [
@@ -90,6 +94,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   errorComponent: ErrorComponent,
 });
 
+// ========== HTML Shell ==========
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ar" dir="rtl">
@@ -104,14 +109,31 @@ function RootShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-import { AuthProvider } from "@/lib/auth";
+// ========== App Content – يعرض شاشة تحميل حتى تنتهي استعادة الجلسة ==========
+function AppContent() {
+  const { isLoading } = useAuth();
 
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background" dir="rtl">
+        <div className="text-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+          <p className="mt-2 text-sm text-muted-foreground">جاري استعادة الجلسة...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return <Outlet />;
+}
+
+// ========== Root Component ==========
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <Outlet />
+        <AppContent />
         <Toaster position="top-center" richColors />
       </AuthProvider>
     </QueryClientProvider>
