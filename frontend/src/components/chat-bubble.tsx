@@ -28,11 +28,11 @@ const WELCOME_MSG: Message = {
   id: "welcome",
   from: "them",
   who: "ت",
-  text: "مرحباً! أنا المساعد الذكي لتيرّا. يمكنني مساعدتك في إدارة مهام لوحة كانبان. جرّب قول:\n\n• \"أضف مهمة جديدة بعنوان تصميم الصفحة\"\n• \"انقل مهمة Setup Database إلى مكتمل\"\n• \"حذف مهمة تحسين الأداء\"\n• \"عيّن مهمة كتابة المحتوى للعضو رقم 2\"\n• \"حلل حالة المشروع\"",
+  text: "مرحباً! أنا المساعد الذكي لتيرّا. يمكنني مساعدتك في إدارة مهامك عبر جميع مشاريعك. جرّب قول:\n\n• \"أضف مهمة جديدة بعنوان تصميم الصفحة في مشروع X\"\n• \"انقل مهمة Setup Database إلى مكتمل\"\n• \"حذف مهمة تحسين الأداء\"\n• \"عيّن مهمة كتابة المحتوى للعضو رقم 2\"\n• \"حلل حالة المشاريع\"",
   time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
 };
 
-export function ChatBubble({ persona, projectId }: { persona: string; projectId?: number }) {
+export function ChatBubble({ persona }: { persona: string }) {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -45,7 +45,7 @@ export function ChatBubble({ persona, projectId }: { persona: string; projectId?
     }
   }, [messages, open]);
 
-  // --- WebSocket: listen for AI pending actions ---
+  // WebSocket listeners (unchanged)
   useEffect(() => {
     if (!wsIsConnected()) return;
 
@@ -70,10 +70,6 @@ export function ChatBubble({ persona, projectId }: { persona: string; projectId?
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || loading) return;
-    if (!projectId) {
-      toast.error("خطأ: لم يتم تحديد مشروع.");
-      return;
-    }
 
     const userMessage = input.trim();
     setInput("");
@@ -90,10 +86,8 @@ export function ChatBubble({ persona, projectId }: { persona: string; projectId?
     setLoading(true);
 
     try {
-      const response: AiCommandResponse = await sendAiCommand({
-        message: userMessage,
-        projectId: projectId,
-      });
+      // لم نعد نرسل projectId
+      const response: AiCommandResponse = await sendAiCommand({ message: userMessage });
 
       const aiMsg: Message = {
         id: (Date.now() + 1).toString(),
@@ -109,7 +103,6 @@ export function ChatBubble({ persona, projectId }: { persona: string; projectId?
         aiMsg.pendingAction = { actionId: response.actionId };
       }
 
-      // If action was executed, show a summary
       if (response.executedAction) {
         const a = response.executedAction;
         const actionLabels: Record<string, string> = {
@@ -140,6 +133,7 @@ export function ChatBubble({ persona, projectId }: { persona: string; projectId?
     }
   };
 
+  // confirm/deny logic unchanged
   const handleConfirm = async (messageId: string, actionId: number, approved: boolean) => {
     try {
       await confirmAiAction(actionId, approved);
@@ -236,7 +230,6 @@ export function ChatBubble({ persona, projectId }: { persona: string; projectId?
                           : "rounded-br-sm bg-card text-card-foreground border border-border",
                     )}
                   >
-                    {/* Action summary line */}
                     {m.isAction && m.actionType && (
                       <p className="mb-1 flex items-center gap-1.5 text-xs font-semibold">
                         <Wand2 className="h-3.5 w-3.5 text-primary" />
@@ -245,7 +238,6 @@ export function ChatBubble({ persona, projectId }: { persona: string; projectId?
                     )}
                     {m.text}
 
-                    {/* Pending Action UI — confirm/cancel buttons */}
                     {m.pendingAction && !m.pendingAction.resolved && (
                       <div className="mt-3 flex gap-2 border-t border-border/50 pt-3">
                         <Button
@@ -269,7 +261,6 @@ export function ChatBubble({ persona, projectId }: { persona: string; projectId?
                       </div>
                     )}
 
-                    {/* Resolved badge */}
                     {m.pendingAction?.resolved && (
                       <div className="mt-2 text-xs font-semibold opacity-80">
                         {m.pendingAction.approved ? "✅ تم التأكيد" : "❌ تم الإلغاء"}
@@ -307,7 +298,7 @@ export function ChatBubble({ persona, projectId }: { persona: string; projectId?
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="مثال: أضف مهمة جديدة..."
+              placeholder="اسأل عن أي مشروع..."
               className="bg-background text-right"
               disabled={loading}
             />
@@ -327,6 +318,7 @@ export function ChatBubble({ persona, projectId }: { persona: string; projectId?
         </div>
       )}
 
+      {/* Floating button */}
       <button
         onClick={() => setOpen((o) => !o)}
         className={cn(

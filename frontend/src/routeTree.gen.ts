@@ -15,6 +15,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as UserProfileRouteImport } from './routes/user/profile'
+import { Route as MemberProjectsRouteImport } from './routes/member/projects'
 import { Route as MemberMyTasksRouteImport } from './routes/member/my-tasks'
 import { Route as MemberKanbanRouteImport } from './routes/member/kanban'
 import { Route as ManagerKanbanRouteImport } from './routes/manager/kanban'
@@ -57,6 +58,11 @@ const IndexRoute = IndexRouteImport.update({
 const UserProfileRoute = UserProfileRouteImport.update({
   id: '/user/profile',
   path: '/user/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MemberProjectsRoute = MemberProjectsRouteImport.update({
+  id: '/member/projects',
+  path: '/member/projects',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MemberMyTasksRoute = MemberMyTasksRouteImport.update({
@@ -142,6 +148,7 @@ export interface FileRoutesByFullPath {
   '/manager/kanban': typeof ManagerKanbanRoute
   '/member/kanban': typeof MemberKanbanRoute
   '/member/my-tasks': typeof MemberMyTasksRoute
+  '/member/projects': typeof MemberProjectsRoute
   '/user/profile': typeof UserProfileRoute
   '/manager/projects/$projectId': typeof ManagerProjectsProjectIdRoute
   '/manager/tasks/$taskId': typeof ManagerTasksTaskIdRoute
@@ -163,6 +170,7 @@ export interface FileRoutesByTo {
   '/manager/kanban': typeof ManagerKanbanRoute
   '/member/kanban': typeof MemberKanbanRoute
   '/member/my-tasks': typeof MemberMyTasksRoute
+  '/member/projects': typeof MemberProjectsRoute
   '/user/profile': typeof UserProfileRoute
   '/manager/projects/$projectId': typeof ManagerProjectsProjectIdRoute
   '/manager/tasks/$taskId': typeof ManagerTasksTaskIdRoute
@@ -185,6 +193,7 @@ export interface FileRoutesById {
   '/manager/kanban': typeof ManagerKanbanRoute
   '/member/kanban': typeof MemberKanbanRoute
   '/member/my-tasks': typeof MemberMyTasksRoute
+  '/member/projects': typeof MemberProjectsRoute
   '/user/profile': typeof UserProfileRoute
   '/manager/projects/$projectId': typeof ManagerProjectsProjectIdRoute
   '/manager/tasks/$taskId': typeof ManagerTasksTaskIdRoute
@@ -208,6 +217,7 @@ export interface FileRouteTypes {
     | '/manager/kanban'
     | '/member/kanban'
     | '/member/my-tasks'
+    | '/member/projects'
     | '/user/profile'
     | '/manager/projects/$projectId'
     | '/manager/tasks/$taskId'
@@ -229,6 +239,7 @@ export interface FileRouteTypes {
     | '/manager/kanban'
     | '/member/kanban'
     | '/member/my-tasks'
+    | '/member/projects'
     | '/user/profile'
     | '/manager/projects/$projectId'
     | '/manager/tasks/$taskId'
@@ -250,6 +261,7 @@ export interface FileRouteTypes {
     | '/manager/kanban'
     | '/member/kanban'
     | '/member/my-tasks'
+    | '/member/projects'
     | '/user/profile'
     | '/manager/projects/$projectId'
     | '/manager/tasks/$taskId'
@@ -272,6 +284,7 @@ export interface RootRouteChildren {
   ManagerKanbanRoute: typeof ManagerKanbanRoute
   MemberKanbanRoute: typeof MemberKanbanRoute
   MemberMyTasksRoute: typeof MemberMyTasksRoute
+  MemberProjectsRoute: typeof MemberProjectsRoute
   UserProfileRoute: typeof UserProfileRoute
   ManagerProjectsProjectIdRoute: typeof ManagerProjectsProjectIdRoute
   ManagerTasksTaskIdRoute: typeof ManagerTasksTaskIdRoute
@@ -320,6 +333,13 @@ declare module '@tanstack/react-router' {
       path: '/user/profile'
       fullPath: '/user/profile'
       preLoaderRoute: typeof UserProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/member/projects': {
+      id: '/member/projects'
+      path: '/member/projects'
+      fullPath: '/member/projects'
+      preLoaderRoute: typeof MemberProjectsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/member/my-tasks': {
@@ -432,6 +452,7 @@ const rootRouteChildren: RootRouteChildren = {
   ManagerKanbanRoute: ManagerKanbanRoute,
   MemberKanbanRoute: MemberKanbanRoute,
   MemberMyTasksRoute: MemberMyTasksRoute,
+  MemberProjectsRoute: MemberProjectsRoute,
   UserProfileRoute: UserProfileRoute,
   ManagerProjectsProjectIdRoute: ManagerProjectsProjectIdRoute,
   ManagerTasksTaskIdRoute: ManagerTasksTaskIdRoute,

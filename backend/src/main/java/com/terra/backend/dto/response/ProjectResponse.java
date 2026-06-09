@@ -21,6 +21,7 @@ public class ProjectResponse {
     private Integer progress;
     private String createdAt;
     private List<TaskResponse> tasks;
+
     public static ProjectResponse fromEntity(Project project) {
         ProjectResponse r = new ProjectResponse();
         r.setId(project.getId());

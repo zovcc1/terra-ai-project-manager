@@ -10,15 +10,13 @@ import org.springframework.stereotype.Service;
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Base64;
 
 @Service
 public class AiSettingsService {
-    private final AiSettingsRepository repository;
     private static final String ALGORITHM = "AES";
     private static final String TRANSFORMATION = "AES";
-    
+    private final AiSettingsRepository repository;
     @Value("${ai.encryption.key}")
     private String secretKey;
 
@@ -36,7 +34,8 @@ public class AiSettingsService {
                 .defaultModel(settings.getDefaultModel())
                 .build();
     }
-    // Add this method to AiSettingsService
+
+
     public String getActiveApiKey() {
         AiSettings settings = repository.findById(1L).orElseThrow(() ->
                 new RuntimeException("AI settings not configured. Please set up the API key."));
@@ -49,6 +48,7 @@ public class AiSettingsService {
         }
         return key;
     }
+
     public void updateSettings(AiSettingsRequest request) {
         AiSettings settings = repository.findById(1L).orElse(new AiSettings());
         settings.setId(1L);
@@ -94,10 +94,7 @@ public class AiSettingsService {
         AiSettings settings = repository.findById(1L).orElse(new AiSettings());
         if (!settings.isEnabled()) return null;
         String encrypted = settings.getApiKeyEncrypted();
-        String decrypted = decrypt(encrypted);
-        System.out.println("Decrypted API Key: " + decrypted);
-
-        return decrypted;
+        return decrypt(encrypted);
     }
 
     private String maskApiKey(String key) {

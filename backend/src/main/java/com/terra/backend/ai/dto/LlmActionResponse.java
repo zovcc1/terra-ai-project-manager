@@ -5,9 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * Parsed response from the LLM indicating what Kanban action to perform.
- */
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -23,4 +21,5 @@ public class LlmActionResponse {
     private Long assigneeId;
     private String dueDate;
     private String message;
+    private Long projectId;
 }

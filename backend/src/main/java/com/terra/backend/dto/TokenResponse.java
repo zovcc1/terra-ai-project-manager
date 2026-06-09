@@ -3,6 +3,7 @@ package com.terra.backend.dto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+
 import java.util.List;
 
 @Getter

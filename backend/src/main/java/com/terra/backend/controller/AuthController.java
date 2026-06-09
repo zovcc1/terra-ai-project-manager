@@ -2,18 +2,24 @@ package com.terra.backend.controller;
 
 import com.terra.backend.dto.LoginRequest;
 import com.terra.backend.dto.TokenResponse;
-import com.terra.backend.dto.request.*;
+import com.terra.backend.dto.request.ForgotPasswordRequest;
+import com.terra.backend.dto.request.RegisterRequest;
+import com.terra.backend.dto.request.ResetPasswordRequest;
+import com.terra.backend.dto.request.VerifyEmailRequest;
 import com.terra.backend.entity.Role;
 import com.terra.backend.entity.User;
 import com.terra.backend.repository.UserRepository;
-import com.terra.backend.service.AuthService;
+import com.terra.backend.service.AuthenticationService;
 import com.terra.backend.service.EmailService;
 import com.terra.backend.service.RedisStateService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 import java.util.UUID;
@@ -22,16 +28,16 @@ import java.util.UUID;
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    private final AuthService authService;
+    private final AuthenticationService authenticationService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final RedisStateService redisStateService;
     private final EmailService emailService;
 
-    public AuthController(AuthService authService, UserRepository userRepository,
+    public AuthController(AuthenticationService authenticationService, UserRepository userRepository,
                           PasswordEncoder passwordEncoder, RedisStateService redisStateService,
                           EmailService emailService) {
-        this.authService = authService;
+        this.authenticationService = authenticationService;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.redisStateService = redisStateService;
@@ -40,7 +46,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<TokenResponse> login(@RequestBody LoginRequest loginRequest) {
-        return ResponseEntity.ok(authService.login(loginRequest));
+        return ResponseEntity.ok(authenticationService.login(loginRequest));
     }
 
     @PostMapping("/register")

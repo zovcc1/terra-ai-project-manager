@@ -2,6 +2,7 @@ package com.terra.backend.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -36,11 +37,11 @@ public class PendingAction {
     private LocalDateTime createdAt;
     private LocalDateTime expiresAt;
 
-    public enum ActionStatus { PENDING, APPROVED, REJECTED, EXPIRED }
-
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         if (status == null) status = ActionStatus.PENDING;
     }
+
+    public enum ActionStatus {PENDING, APPROVED, REJECTED, EXPIRED}
 }

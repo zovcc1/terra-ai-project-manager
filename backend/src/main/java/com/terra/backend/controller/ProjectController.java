@@ -32,10 +32,9 @@ public class ProjectController {
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
 
-    // --- Manager endpoints ---
 
     @GetMapping("/manager/projects")
-    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN') or hasRole('MEMBER')")
     public ResponseEntity<List<ProjectResponse>> getAllProjects() {
         return ResponseEntity.ok(projectService.getAllProjects().stream()
                 .map(ProjectResponse::fromEntity)
@@ -43,7 +42,7 @@ public class ProjectController {
     }
 
     @GetMapping("/manager/projects/{id}")
-    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN') or hasRole('MEMBER')")
     public ResponseEntity<ProjectResponse> getProjectById(@PathVariable Long id,
                                                           @AuthenticationPrincipal UserDetails principal) {
         authorizationService.verifyProjectAccess(principal.getUsername(), id);
@@ -57,6 +56,7 @@ public class ProjectController {
         List<ProjectResponse> projects = projectService.getProjectsForUser(user.getId());
         return ResponseEntity.ok(projects);
     }
+
     @PostMapping("/manager/projects")
     @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<ProjectResponse> createProject(@RequestBody CreateProjectRequest request,
@@ -83,7 +83,7 @@ public class ProjectController {
     }
 
     @GetMapping("/manager/projects/{projectId}/members")
-    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN') or hasRole('MEMBER')")
     public ResponseEntity<List<UserResponse>> getProjectMembers(@PathVariable Long projectId,
                                                                 @AuthenticationPrincipal UserDetails principal) {
         authorizationService.verifyProjectAccess(principal.getUsername(), projectId);
@@ -95,11 +95,11 @@ public class ProjectController {
         if (project.getManager() != null) {
             members.add(project.getManager());
         }
-        return ResponseEntity.ok(members.stream().map(UserResponse::fromEntity).collect(Collectors.toList()));
+        return ResponseEntity.ok(members.stream().map(UserResponse::from).collect(Collectors.toList()));
     }
 
     @GetMapping("/manager/projects/{projectId}/stats")
-    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN') or hasRole('MEMBER')")
     public ResponseEntity<Map<String, Object>> getProjectStats(@PathVariable Long projectId,
                                                                @AuthenticationPrincipal UserDetails principal) {
         authorizationService.verifyProjectAccess(principal.getUsername(), projectId);
@@ -115,14 +115,13 @@ public class ProjectController {
                 "completedTasks", done,
                 "inProgressTasks", tasks.stream().filter(t -> t.getStatus() == Task.TaskStatus.DOING).count(),
                 "overdueTasks", overdue,
-                "completionRate", total > 0 ? (int)(done * 100 / total) : 0
+                "completionRate", total > 0 ? (int) (done * 100 / total) : 0
         ));
     }
 
-    // --- Manager analytics ---
 
     @GetMapping("/manager/analytics")
-    @PreAuthorize("hasRole('MANAGER')")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
     public ResponseEntity<Map<String, Object>> getManagerAnalytics(@AuthenticationPrincipal UserDetails principal) {
         List<Project> projects = projectService.getProjectsByManager(principal.getUsername());
         int totalProjects = projects.size();
@@ -146,7 +145,7 @@ public class ProjectController {
                 "totalTasks", totalTasks,
                 "completedTasks", completedTasks,
                 "overdueTasks", overdueTasks,
-                "completionRate", totalTasks > 0 ? (int)(completedTasks * 100 / totalTasks) : 0
+                "completionRate", totalTasks > 0 ? (int) (completedTasks * 100 / totalTasks) : 0
         ));
     }
 }

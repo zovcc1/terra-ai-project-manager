@@ -49,6 +49,18 @@ public class GlobalExceptionHandler {
         ));
     }
 
+    @ExceptionHandler(LlmClientException.class)
+    public ResponseEntity<Map<String, Object>> handleLlmClientException(LlmClientException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
+
+                "error", "An unexpected Generated Output",
+                "message", ex.getMessage(),
+                "timestamp", LocalDateTime.now().toString()
+        ));
+
+
+    }
+
     @ExceptionHandler(UnauthorizedException.class)
     public ResponseEntity<Map<String, Object>> handleUnauthorized(UnauthorizedException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(

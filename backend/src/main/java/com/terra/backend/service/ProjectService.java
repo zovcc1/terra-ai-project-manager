@@ -6,7 +6,6 @@ import com.terra.backend.dto.response.ProjectResponse;
 import com.terra.backend.entity.Project;
 import com.terra.backend.entity.Team;
 import com.terra.backend.entity.User;
-import com.terra.backend.exception.ResourceNotFoundException;
 import com.terra.backend.repository.ProjectRepository;
 import com.terra.backend.repository.TeamRepository;
 import com.terra.backend.repository.UserRepository;
@@ -23,6 +22,7 @@ public class ProjectService {
     private final ProjectRepository projectRepository;
     private final TeamRepository teamRepository;
     private final UserRepository userRepository;
+    private final UserService userService;
 
     public List<Project> getAllProjects() {
         return projectRepository.findAll();
@@ -32,20 +32,19 @@ public class ProjectService {
         return projectRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Project not found"));
     }
+
     public List<ProjectResponse> getProjectsForUser(Long userId) {
-        // Optional: verify user exists
-        if (!userRepository.existsById(userId)) {
-            throw new ResourceNotFoundException("User not found");
-        }
+        //get all project for user
         List<Project> projects = projectRepository.findProjectsByUser(userId);
+
         return projects.stream()
                 .map(ProjectResponse::fromEntity)
                 .collect(Collectors.toList());
     }
+
     @Transactional
-    public Project createProject(CreateProjectRequest request, String managerEmail) {
-        User manager = userRepository.findByUsername(managerEmail)
-                .orElseThrow(() -> new RuntimeException("Manager not found"));
+    public Project createProject(CreateProjectRequest request, String username) {
+        User manager = userService.findByUsername(username);
 
         Team team = null;
         if (request.getTeamId() != null) {

@@ -2,12 +2,11 @@ package com.terra.backend.controller;
 
 import com.terra.backend.dto.request.CreateTeamRequest;
 import com.terra.backend.dto.request.UpdateTeamRequest;
-import com.terra.backend.dto.response.TeamResponse;
 import com.terra.backend.dto.response.AdminUserResponse;
+import com.terra.backend.dto.response.TeamResponse;
 import com.terra.backend.repository.TeamRepository;
 import com.terra.backend.repository.UserRepository;
 import com.terra.backend.service.TeamService;
-import com.terra.backend.entity.Team;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;

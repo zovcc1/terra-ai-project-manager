@@ -7,6 +7,10 @@ import com.terra.backend.exception.ResourceNotFoundException;
 import com.terra.backend.repository.UserRepository;
 import com.terra.backend.service.NotificationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -30,11 +34,17 @@ public class NotificationController {
     }
 
     @GetMapping("/recent")
-    public ResponseEntity<List<NotificationResponse>> getRecent(@AuthenticationPrincipal UserDetails principal) {
+    public ResponseEntity<Page<NotificationResponse>> getRecent(
+            @AuthenticationPrincipal UserDetails principal,
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+
         User user = userRepository.findByUsername(principal.getUsername())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        return ResponseEntity.ok(notificationService.getRecentNotifications(user.getId(), 20));
+
+        // Pass 'pageable' here instead of '20'
+        return ResponseEntity.ok(notificationService.getRecentNotifications(user.getId(), pageable));
     }
+
 
     @PostMapping("/read")
     public ResponseEntity<Void> markAsRead(@RequestBody MarkNotificationReadRequest request,

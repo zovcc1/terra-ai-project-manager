@@ -1,10 +1,15 @@
 package com.terra.backend.service;
 
 import com.terra.backend.dto.response.CommentResponse;
-import com.terra.backend.entity.*;
+import com.terra.backend.entity.Comment;
+import com.terra.backend.entity.Role;
+import com.terra.backend.entity.Task;
+import com.terra.backend.entity.User;
 import com.terra.backend.exception.ResourceNotFoundException;
 import com.terra.backend.exception.UnauthorizedException;
-import com.terra.backend.repository.*;
+import com.terra.backend.repository.CommentRepository;
+import com.terra.backend.repository.TaskRepository;
+import com.terra.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,13 +23,12 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CommentService {
 
+    private static final Pattern MENTION_PATTERN = Pattern.compile("@(\\w+)");
     private final CommentRepository commentRepository;
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
     private final WebSocketService webSocketService;
-
-    private static final Pattern MENTION_PATTERN = Pattern.compile("@(\\w+)");
 
     public List<CommentResponse> getCommentsByTask(Long taskId) {
         return commentRepository.findByTaskIdOrderByCreatedAtAsc(taskId)
@@ -51,7 +55,9 @@ public class CommentService {
         webSocketService.sendCommentToTask(taskId, CommentResponse.fromEntity(saved));
 
         // Detect mentions and create notifications
+
         detectMentions(content, task, author);
+
 
         return CommentResponse.fromEntity(saved);
     }
@@ -62,7 +68,7 @@ public class CommentService {
             String username = matcher.group(1);
             userRepository.findByUsername(username).ifPresent(mentionedUser -> {
                 // Do not notify the comment author themselves
-                if (mentionedUser.getId().equals(commentAuthor.getId())) {
+                if (!mentionedUser.getId().equals(commentAuthor.getId())) {
                     notificationService.createMentionNotification(
                             mentionedUser,
                             commentAuthor,

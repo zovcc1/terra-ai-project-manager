@@ -64,25 +64,43 @@ function TaskDetailPage() {
     queryFn: () => getTaskComments(id),
   });
 
-  useEffect(() => {
-    const token = localStorage.getItem("terra_token");
-    if (!token) return;
-    wsConnect(token).catch(console.error);
-    const unsubscribe = subscribeTaskComments(id, (event: CommentEvent) => {
-      if ("type" in event && event.type === "DELETE_COMMENT") {
-        queryClient.setQueryData<Comment[]>(["taskComments", id], (old = []) =>
-          old.filter((c) => c.id !== event.commentId)
-        );
-      } else {
-        const comment = event as Comment;
-        queryClient.setQueryData<Comment[]>(["taskComments", id], (old = []) => {
-          if (old.some((c) => c.id === comment.id)) return old;
-          return [...old, comment];
-        });
-      }
-    });
-    return () => unsubscribe();
-  }, [id, queryClient]);
+const wsInitialized = useRef(false);
+
+useEffect(() => {
+  const token = localStorage.getItem("terra_token");
+  if (!token || wsInitialized.current) return;
+
+  let cancelled = false;
+
+  wsConnect(token)
+    .then(() => {
+      if (cancelled) return;
+      wsInitialized.current = true;
+
+      const unsubscribe = subscribeTaskComments(id, (event: CommentEvent) => {
+        if (cancelled) return;
+        if ("type" in event && event.type === "DELETE_COMMENT") {
+          queryClient.setQueryData<Comment[]>(["taskComments", id], (old = []) =>
+            old.filter((c) => c.id !== event.commentId)
+          );
+        } else {
+          const comment = event as Comment;
+          queryClient.setQueryData<Comment[]>(["taskComments", id], (old = []) => {
+            if (old.some((c) => c.id === comment.id)) return old;
+            return [...old, comment];
+          });
+        }
+      });
+
+      return unsubscribe;
+    })
+    .catch(console.error);
+
+  return () => {
+    cancelled = true;
+    wsInitialized.current = false;
+  };
+}, [id, queryClient]); // لا تضع taskId هنا كمتغير متغير
 
   const updateStatusMutation = useMutation({
     mutationFn: (status: string) => updateTaskStatus(id, status),

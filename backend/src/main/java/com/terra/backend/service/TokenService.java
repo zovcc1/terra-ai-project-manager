@@ -8,8 +8,8 @@ import java.time.Duration;
 @Service
 public class TokenService {
 
-    private final StringRedisTemplate redisTemplate;
     private static final String REFRESH_TOKEN_PREFIX = "refresh_token:";
+    private final StringRedisTemplate redisTemplate;
 
     public TokenService(StringRedisTemplate redisTemplate) {
         this.redisTemplate = redisTemplate;

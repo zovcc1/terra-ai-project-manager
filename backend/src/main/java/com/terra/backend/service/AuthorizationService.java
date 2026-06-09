@@ -1,8 +1,8 @@
 package com.terra.backend.service;
 
 import com.terra.backend.entity.Project;
-import com.terra.backend.entity.Task;
 import com.terra.backend.entity.Role;
+import com.terra.backend.entity.Task;
 import com.terra.backend.entity.User;
 import com.terra.backend.exception.UnauthorizedException;
 import com.terra.backend.repository.ProjectRepository;
@@ -44,11 +44,8 @@ public class AuthorizationService {
 
         if (project.getManager() != null && project.getManager().getId().equals(user.getId())) return true;
 
-        if (project.getTeam() != null && project.getTeam().getMembers() != null
-                && project.getTeam().getMembers().stream().anyMatch(m -> m.getId().equals(user.getId())))
-            return true;
-
-        return false;
+        return project.getTeam() != null && project.getTeam().getMembers() != null
+                && project.getTeam().getMembers().stream().anyMatch(m -> m.getId().equals(user.getId()));
     }
 
     public void verifyTaskAccess(String username, Long taskId) {

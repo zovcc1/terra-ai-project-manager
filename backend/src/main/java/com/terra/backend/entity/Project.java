@@ -2,6 +2,7 @@ package com.terra.backend.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -54,6 +55,7 @@ public class Project {
         if (status == null) status = ProjectStatus.ACTIVE;
     }
 
-    public enum Priority { LOW, MEDIUM, HIGH }
-    public enum ProjectStatus { ACTIVE, COMPLETED, ARCHIVED }
+    public enum Priority {LOW, MEDIUM, HIGH}
+
+    public enum ProjectStatus {ACTIVE, COMPLETED, ARCHIVED}
 }

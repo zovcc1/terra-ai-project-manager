@@ -11,14 +11,14 @@ import java.util.stream.Collectors;
 @Service
 public class RedisStateService {
 
-    private final StringRedisTemplate redisTemplate;
-
     private static final String BLOCKLIST_PREFIX = "auth:blocklist:";
     private static final String REFRESH_PREFIX = "auth:refresh:";
     private static final String VERSION_PREFIX = "auth:version:";
     private static final String EPHEMERAL_PREFIX = "auth:ephemeral:";
     private static final String RATE_LIMIT_PREFIX = "ratelimit:";
     private static final String CONVERSATION_KEY_PREFIX = "ai:conv:";
+    private final StringRedisTemplate redisTemplate;
+
     public RedisStateService(StringRedisTemplate redisTemplate) {
         this.redisTemplate = redisTemplate;
     }
@@ -28,7 +28,7 @@ public class RedisStateService {
     }
 
     public boolean isTokenBlocked(String jti) {
-        return Boolean.TRUE.equals(redisTemplate.hasKey(BLOCKLIST_PREFIX + jti));
+        return redisTemplate.hasKey(BLOCKLIST_PREFIX + jti);
     }
 
     public void saveRefreshToken(Long userId, String hashedToken, long ttlMs) {
@@ -73,8 +73,8 @@ public class RedisStateService {
         return count != null && count > limit;
     }
 
-    public void addConversationMessage(Long userId, Long projectId, String role, String content) {
-        String key = CONVERSATION_KEY_PREFIX + userId + ":" + projectId;
+    public void addConversationMessage(Long userId, String role, String content) {
+        String key = CONVERSATION_KEY_PREFIX + userId;
         String message = System.currentTimeMillis() + "|" + role + "|" + content;
         redisTemplate.opsForList().rightPush(key, message);
         redisTemplate.expire(key, Duration.ofMinutes(30)); // TTL 30 min
@@ -85,8 +85,8 @@ public class RedisStateService {
         }
     }
 
-    public List<String[]> getConversationHistory(Long userId, Long projectId, int limit) {
-        String key = CONVERSATION_KEY_PREFIX + userId + ":" + projectId;
+    public List<String[]> getConversationHistory(Long userId, int limit) {
+        String key = CONVERSATION_KEY_PREFIX + userId;
         List<String> messages = redisTemplate.opsForList().range(key, -limit, -1);
         if (messages == null) return List.of();
         return messages.stream()
@@ -95,7 +95,6 @@ public class RedisStateService {
                 .map(parts -> new String[]{parts[1], parts[2]}) // [role, content]
                 .collect(Collectors.toList());
     }
-
 
 
 }

@@ -1,6 +1,7 @@
 package com.terra.backend.dto.request;
 
 import lombok.Data;
+
 import java.time.LocalDate;
 
 @Data
@@ -10,5 +11,5 @@ public class UpdateProjectRequest {
     private Long teamId;
     private LocalDate dueDate;
     private String priority;
-    private String status; // ACTIVE, COMPLETED, ARCHIVED
+    private String status;
 }

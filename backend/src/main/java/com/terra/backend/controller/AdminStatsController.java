@@ -35,7 +35,6 @@ public class AdminStatsController {
     public ResponseEntity<SystemStatsResponse> getStats() {
         long totalUsers = userRepository.count();
         long activeProjects = projectRepository.countByStatus(Project.ProjectStatus.ACTIVE);
-        
         LocalDateTime startOfMonth = LocalDateTime.now().withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0);
         long completedThisMonth = taskRepository.countByStatusAndUpdatedAtAfter(Task.TaskStatus.DONE, startOfMonth);
 
@@ -52,7 +51,6 @@ public class AdminStatsController {
         long days = TimeUnit.MILLISECONDS.toDays(uptimeMillis);
         long hours = TimeUnit.MILLISECONDS.toHours(uptimeMillis) % 24;
         long minutes = TimeUnit.MILLISECONDS.toMinutes(uptimeMillis) % 60;
-        
         if (days > 0) return String.format("%dd %dh %dm", days, hours, minutes);
         if (hours > 0) return String.format("%dh %dm", hours, minutes);
         return String.format("%dm", minutes);

@@ -2,8 +2,11 @@ package com.terra.backend.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "tasks")
@@ -42,6 +45,10 @@ public class Task {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+
+    @OneToMany(mappedBy = "task",cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
@@ -55,6 +62,7 @@ public class Task {
         updatedAt = LocalDateTime.now();
     }
 
-    public enum TaskStatus { TODO, DOING, REVIEW, DONE }
-    public enum Priority { LOW, MEDIUM, HIGH }
+    public enum TaskStatus {TODO, DOING, REVIEW, DONE}
+
+    public enum Priority {LOW, MEDIUM, HIGH}
 }

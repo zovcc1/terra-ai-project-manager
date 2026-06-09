@@ -150,7 +150,44 @@ export const resetPassword = (data: {
     method: "POST",
     body: JSON.stringify(data),
   });
+// ─── Types ───────────────────────────────────────────────────────────────────
+export interface AdminUser {
+  id: number;
+  username: string;
+  email: string;
+  fullName: string;
+  role: string;
+  status: "ACTIVE" | "SUSPENDED" | "PENDING";
+  avatarUrl?: string;
+  bio?: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
+export interface AdminUpdateUserRequest {
+  username?: string;
+  email?: string;
+  password?: string;
+  fullName?: string;
+  role?: string;
+  status?: "ACTIVE" | "SUSPENDED" | "PENDING";
+  avatarUrl?: string;
+  bio?: string;
+}
+
+// ─── Endpoints ───────────────────────────────────────────────────────────────
+// بدلاً من api.get / api.put / api.patch / api.delete
+export const getUsers = (): Promise<AdminUser[]> =>
+  apiFetch<AdminUser[]>("/admin/users/manage?size=200")
+    .then(res => res.content)
+export const updateUser = (id: number, data: AdminUpdateUserRequest): Promise<AdminUser> =>
+  apiFetch<AdminUser>(`/admin/users/manage/${id}`, { method: "PUT", body: JSON.stringify(data) });
+
+export const setUserStatus = (id: number, status: "ACTIVE" | "SUSPENDED" | "PENDING"): Promise<AdminUser> =>
+  apiFetch<AdminUser>(`/admin/users/manage/${id}/status?status=${status}`, { method: "PATCH" });
+
+export const deleteUser = (id: number): Promise<void> =>
+  apiFetch<void>(`/admin/users/manage/${id}`, { method: "DELETE" });
 export interface Project {
   id: number;
   name: string;
@@ -238,7 +275,6 @@ export const getManagerAnalytics = (): Promise<ManagerAnalytics> =>
 
 export interface AiCommandRequest {
   message: string;
-  projectId: number;
 }
 export const getManagerTeams = (): Promise<Team[]> =>
   apiFetch<Team[]>("/manager/teams");
@@ -371,8 +407,8 @@ export interface AdminUser {
   status: string;
 }
 
-export const getUsers = (): Promise<AdminUser[]> =>
-  apiFetch<AdminUser[]>("/admin/users");
+// export const getUsers = (): Promise<AdminUser[]> =>
+//   apiFetch<AdminUser[]>("/admin/users");
 
 export const getAdminUsers = (): Promise<AdminUser[]> =>
   apiFetch<AdminUser[]>("/admin/users");
@@ -485,7 +521,11 @@ export const updateTask = (
     method: "PUT",
     body: JSON.stringify(data),
   });
-
+export const createComment = (taskId: number, data: { content: string }): Promise<Comment> =>
+  apiFetch<Comment>(`/member/tasks/${taskId}/comments`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
 export const getTaskComments = (taskId: number): Promise<Comment[]> =>
   apiFetch<Comment[]>(`/member/tasks/${taskId}/comments`);
 export const addComment = (taskId: number, content: string): Promise<Comment> =>
@@ -503,3 +543,4 @@ export const updateComment = (taskId: number, commentId: number, content: string
 export const deleteComment = (taskId: number, commentId: number): Promise<void> =>
   apiFetch<void>(`/member/tasks/${taskId}/comments/${commentId}`, { method: "DELETE" });
 export const getMyProjects = (): Promise<Project[]> => apiFetch<Project[]>("/member/projects");
+

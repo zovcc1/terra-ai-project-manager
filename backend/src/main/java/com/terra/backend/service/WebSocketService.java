@@ -2,11 +2,14 @@ package com.terra.backend.service;
 
 import com.terra.backend.dto.response.CommentResponse;
 import com.terra.backend.dto.response.NotificationResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
 public class WebSocketService {
+    private static final Logger log = LoggerFactory.getLogger(WebSocketService.class);
     private final SimpMessagingTemplate messagingTemplate;
 
     public WebSocketService(SimpMessagingTemplate messagingTemplate) {
@@ -20,7 +23,9 @@ public class WebSocketService {
     public void sendAiPendingToUser(Long userId, Object payload) {
         messagingTemplate.convertAndSendToUser(userId.toString(), "/queue/ai-pending", payload);
     }
+
     public void sendCommentToTask(Long taskId, CommentResponse comment) {
+        log.info("notification send");
         messagingTemplate.convertAndSend("/topic/task/" + taskId + "/comments", comment);
     }
 
@@ -33,17 +38,20 @@ public class WebSocketService {
         messagingTemplate.convertAndSend("/topic/task/" + taskId + "/comments", comment);
     }
 
-    public void sendNotificationToUser(Long userId, NotificationResponse notification) {
-        messagingTemplate.convertAndSend("/topic/user/" + userId + "/notifications", notification);
+    public void sendNotificationToUser(String username, NotificationResponse notification) {
+
+        messagingTemplate.convertAndSendToUser(username, "/queue/notifications", notification);
+        log.info("convertAndSend {}", username);
     }
 
     // Helper class for deletion events
     public static class DeleteCommentMessage {
-        private String type = "DELETE_COMMENT";
-        private Long commentId;
-        public DeleteCommentMessage(Long commentId) { this.commentId = commentId; }
-        public String getType() { return type; }
-        public Long getCommentId() { return commentId; }
+        private final String type = "DELETE_COMMENT";
+        private final Long commentId;
+
+        public DeleteCommentMessage(Long commentId) {
+            this.commentId = commentId;
+        }
     }
 
 

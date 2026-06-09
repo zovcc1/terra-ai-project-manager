@@ -3,6 +3,7 @@ package com.terra.backend.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -46,11 +47,6 @@ public class User {
 
     private String avatarUrl;
     private String bio;
-
-    public enum UserStatus {
-        ACTIVE, SUSPENDED, PENDING
-    }
-
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -63,5 +59,9 @@ public class User {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+
+    public enum UserStatus {
+        ACTIVE, SUSPENDED, PENDING
     }
 }

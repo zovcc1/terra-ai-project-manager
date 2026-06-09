@@ -1,13 +1,9 @@
 package com.terra.backend.ai;
 
+import com.terra.backend.exception.LlmClientException;
 import com.terra.backend.service.AiSettingsService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -18,20 +14,16 @@ import java.util.Map;
 @Component
 public class OpenAiClient implements LlmClient {
 
+    private final RestTemplate restTemplate = new RestTemplate();
+    private final AiSettingsService aiSettingsService;
     @Value("${ai.openai.api.url:https://openrouter.ai/api/v1/chat/completions}")
     private String apiUrl;
-
     @Value("${ai.openai.model:openai/gpt-oss-120b:free}")
     private String model;
-
-    private final RestTemplate restTemplate = new RestTemplate();
-
-    private  final AiSettingsService aiSettingsService;
 
     public OpenAiClient(AiSettingsService aiSettingsService) {
         this.aiSettingsService = aiSettingsService;
     }
-
 
 
     @Override
@@ -68,7 +60,7 @@ public class OpenAiClient implements LlmClient {
                 }
             }
         } catch (Exception e) {
-            throw new RuntimeException("Failed to communicate with OpenRouter API", e);
+            throw new LlmClientException("failed to communicate with api", e.getMessage());
         }
 
         return "{\"actionType\": \"NONE\", \"message\": \"Failed to parse OpenRouter response.\"}";

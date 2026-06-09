@@ -9,10 +9,17 @@ import java.util.List;
 
 public interface ProjectRepository extends JpaRepository<Project, Long> {
     List<Project> findByManagerId(Long managerId);
+
     long countByStatus(Project.ProjectStatus status);
-    // ProjectRepository.java
+
+
     boolean existsByIdAndManagerId(Long id, Long managerId);
-    @Query("SELECT DISTINCT p FROM Project p LEFT JOIN p.tasks t WHERE p.manager.id = :userId OR t.assignee.id = :userId OR (p.team IS NOT NULL AND :userId IN (SELECT m.id FROM p.team.members m))")
+
+    @Query("SELECT DISTINCT p FROM Project p " +
+            "LEFT JOIN p.team t " +
+            "LEFT JOIN t.members m " +
+            "WHERE p.manager.id = :userId OR m.id = :userId")
     List<Project> findProjectsByUser(@Param("userId") Long userId);
+
 
 }

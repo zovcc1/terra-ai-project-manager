@@ -1,7 +1,10 @@
 package com.terra.backend.config;
 
 import com.terra.backend.entity.*;
-import com.terra.backend.repository.*;
+import com.terra.backend.repository.ProjectRepository;
+import com.terra.backend.repository.TaskRepository;
+import com.terra.backend.repository.TeamRepository;
+import com.terra.backend.repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,7 +30,7 @@ public class DataInitializer {
                 return;
             }
 
-            // Create Admin
+
             User admin = User.builder()
                     .username("admin")
                     .email("admin@terra.com")
@@ -38,7 +41,7 @@ public class DataInitializer {
                     .build();
             userRepository.save(admin);
 
-            // Create Manager
+
             User manager = User.builder()
                     .username("manager")
                     .email("manager@terra.com")
@@ -49,7 +52,7 @@ public class DataInitializer {
                     .build();
             userRepository.save(manager);
 
-            // Create Member
+
             User member = User.builder()
                     .username("member")
                     .email("member@terra.com")
@@ -60,7 +63,7 @@ public class DataInitializer {
                     .build();
             userRepository.save(member);
 
-            // Create Team
+
             Team team = Team.builder()
                     .name("Core Team")
                     .description("Backend and Frontend development team")
@@ -69,7 +72,7 @@ public class DataInitializer {
                     .build();
             teamRepository.save(team);
 
-            // Create Project
+
             Project project1 = Project.builder()
                     .name("Website Redesign")
                     .description("Modernize the landing page and dashboard")
@@ -94,7 +97,7 @@ public class DataInitializer {
                     .build();
             projectRepository.save(project2);
 
-            // Create Tasks
+
             Task task1 = Task.builder()
                     .title("Setup Database")
                     .description("Configure MariaDB and initial schema")

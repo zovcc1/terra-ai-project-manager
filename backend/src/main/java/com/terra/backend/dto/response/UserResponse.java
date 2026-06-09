@@ -1,26 +1,40 @@
 package com.terra.backend.dto.response;
 
+import com.terra.backend.entity.Role;
 import com.terra.backend.entity.User;
+import com.terra.backend.entity.User.UserStatus;
 import lombok.Builder;
 import lombok.Data;
+
+import java.time.LocalDateTime;
 
 @Data
 @Builder
 public class UserResponse {
+
     private Long id;
     private String username;
-    private String fullName;
     private String email;
-    private String role;
+    private String fullName;
+    private Role role;
+    private UserStatus status;
+    private String avatarUrl;
+    private String bio;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
-    public static UserResponse fromEntity(User user) {
-        if (user == null) return null;
+    public static UserResponse from(User user) {
         return UserResponse.builder()
                 .id(user.getId())
                 .username(user.getUsername())
-                .fullName(user.getFullName())
                 .email(user.getEmail())
-                .role(user.getRole() != null ? user.getRole().name() : null)
+                .fullName(user.getFullName())
+                .role(user.getRole())
+                .status(user.getStatus())
+                .avatarUrl(user.getAvatarUrl())
+                .bio(user.getBio())
+                .createdAt(user.getCreatedAt())
+                .updatedAt(user.getUpdatedAt())
                 .build();
     }
 }

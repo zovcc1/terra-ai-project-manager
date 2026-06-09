@@ -23,6 +23,7 @@ public class TaskService {
     private final WebSocketService webSocketService;
     private final UserRepository userRepository;
     private final ProjectRepository projectRepository;
+
     public TaskService(TaskRepository taskRepository, WebSocketService webSocketService, UserRepository userRepository, ProjectRepository projectRepository) {
         this.taskRepository = taskRepository;
         this.webSocketService = webSocketService;
@@ -30,7 +31,12 @@ public class TaskService {
         this.projectRepository = projectRepository;
     }
 
-    public Task getTaskById(Long id){
+    public List<Task> getTaskEntitiesByProject(Long projectId) {
+        return taskRepository.findByProjectId(projectId);
+    }
+
+
+    public Task getTaskById(Long id) {
         return taskRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("task not found"));
     }
 
@@ -107,6 +113,7 @@ public class TaskService {
         webSocketService.broadcastKanbanUpdate(projectId, response);
         return response;
     }
+
     @Transactional
     public TaskResponse updateTask(Long taskId, Map<String, Object> body, String currentUsername) {
         Task task = taskRepository.findById(taskId)
@@ -114,8 +121,10 @@ public class TaskService {
 
         if (body.containsKey("title")) task.setTitle((String) body.get("title"));
         if (body.containsKey("description")) task.setDescription((String) body.get("description"));
-        if (body.containsKey("status")) task.setStatus(Task.TaskStatus.valueOf(((String) body.get("status")).toUpperCase()));
-        if (body.containsKey("priority")) task.setPriority(Task.Priority.valueOf(((String) body.get("priority")).toUpperCase()));
+        if (body.containsKey("status"))
+            task.setStatus(Task.TaskStatus.valueOf(((String) body.get("status")).toUpperCase()));
+        if (body.containsKey("priority"))
+            task.setPriority(Task.Priority.valueOf(((String) body.get("priority")).toUpperCase()));
         if (body.containsKey("dueDate") && body.get("dueDate") instanceof String dd) {
             task.setDueDate(LocalDate.parse(dd));
         }

@@ -1,9 +1,15 @@
 package com.terra.backend.service;
 
 import com.terra.backend.dto.response.NotificationResponse;
-import com.terra.backend.entity.*;
+import com.terra.backend.entity.Notification;
+import com.terra.backend.entity.Task;
+import com.terra.backend.entity.User;
 import com.terra.backend.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +20,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class NotificationService {
 
+    private static final Logger log = LogManager.getLogger(NotificationService.class);
     private final NotificationRepository notificationRepository;
     private final WebSocketService webSocketService;
 
@@ -21,6 +28,7 @@ public class NotificationService {
     public void createMentionNotification(User recipient, User source, Task task, String commentPreview) {
         String content = String.format("%s ذكرك في تعليق على مهمة '%s': \"%s\"",
                 source.getFullName(), task.getTitle(), commentPreview);
+        log.info("content المحتوى{}", content);
         Notification notification = Notification.builder()
                 .user(recipient)
                 .sourceUser(source)
@@ -32,7 +40,8 @@ public class NotificationService {
         Notification saved = notificationRepository.save(notification);
 
         // Push real-time notification to the recipient's WebSocket channel
-        webSocketService.sendNotificationToUser(recipient.getId(), NotificationResponse.fromEntity(saved));
+        log.info("Sending notification to user: {}", recipient.getUsername());
+        webSocketService.sendNotificationToUser(recipient.getUsername(), NotificationResponse.fromEntity(saved));
     }
 
     @Transactional
@@ -49,7 +58,7 @@ public class NotificationService {
                 .isRead(false)
                 .build();
         Notification saved = notificationRepository.save(notification);
-        webSocketService.sendNotificationToUser(recipient.getId(), NotificationResponse.fromEntity(saved));
+        webSocketService.sendNotificationToUser(recipient.getUsername(), NotificationResponse.fromEntity(saved));
     }
 
     public List<NotificationResponse> getUnreadNotifications(Long userId) {
@@ -59,13 +68,14 @@ public class NotificationService {
                 .collect(Collectors.toList());
     }
 
-    public List<NotificationResponse> getRecentNotifications(Long userId, int limit) {
-        return notificationRepository.findTop20ByUserIdOrderByCreatedAtDesc(userId)
-                .stream()
-                .limit(limit)
-                .map(NotificationResponse::fromEntity)
-                .collect(Collectors.toList());
+    public Page<NotificationResponse> getRecentNotifications(Long userId, Pageable pageable) {
+        // Fetch the dynamic page of entities from the database
+        Page<Notification> notifications = notificationRepository.findByUserId(userId, pageable);
+
+        // Map the Entity page directly into a DTO page
+        return notifications.map(NotificationResponse::fromEntity);
     }
+
 
     @Transactional
     public void markAsRead(Long userId, List<Long> notificationIds) {

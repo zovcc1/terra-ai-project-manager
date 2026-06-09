@@ -21,9 +21,9 @@ public class AiInsightsEngine {
     private final ProjectRepository projectRepository;
     private final TaskRepository taskRepository;
 
-    public AiInsightsEngine(LlmClient llmClient, ContextCompressor contextCompressor, 
-                          AiSuggestionLogRepository aiSuggestionLogRepository, WebSocketService webSocketService,
-                          ProjectRepository projectRepository, TaskRepository taskRepository) {
+    public AiInsightsEngine(LlmClient llmClient, ContextCompressor contextCompressor,
+                            AiSuggestionLogRepository aiSuggestionLogRepository, WebSocketService webSocketService,
+                            ProjectRepository projectRepository, TaskRepository taskRepository) {
         this.llmClient = llmClient;
         this.contextCompressor = contextCompressor;
         this.aiSuggestionLogRepository = aiSuggestionLogRepository;
@@ -32,16 +32,16 @@ public class AiInsightsEngine {
         this.taskRepository = taskRepository;
     }
 
-    // Architectural fix: Can be called on event
+
     public void generateInsights(Long projectId) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
-        
+
         String context = contextCompressor.getCompressedBoardState(projectId);
         String prompt = "Analyze this project state for bottlenecks and WIP limit violations. Project state: " + context;
         String response = llmClient.generateResponse(prompt);
-        
-        // Use LLM response as the message
+
+
         AiSuggestionLog log = AiSuggestionLog.builder()
                 .suggestionType("BOTTLENECK")
                 .project(project)
@@ -59,7 +59,7 @@ public class AiInsightsEngine {
             try {
                 generateInsights(project.getId());
             } catch (Exception e) {
-                // Log error
+
             }
         }
     }

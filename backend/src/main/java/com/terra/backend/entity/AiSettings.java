@@ -1,6 +1,9 @@
 package com.terra.backend.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.*;
 
 @Entity
@@ -16,11 +19,11 @@ public class AiSettings {
 
     private String provider;
     private String model;
-    
+
     @Column(name = "api_key_encrypted")
     private String apiKeyEncrypted;
-    
+
     private boolean enabled;
-    
+
     private String defaultModel;
 }

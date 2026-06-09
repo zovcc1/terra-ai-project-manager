@@ -1,12 +1,9 @@
 package com.terra.backend.controller;
 
 import com.terra.backend.dto.response.TaskResponse;
-import com.terra.backend.entity.Project;
 import com.terra.backend.entity.Task;
 import com.terra.backend.entity.User;
 import com.terra.backend.exception.ResourceNotFoundException;
-import com.terra.backend.repository.ProjectRepository;
-import com.terra.backend.repository.TaskRepository;
 import com.terra.backend.repository.UserRepository;
 import com.terra.backend.service.AuthorizationService;
 import com.terra.backend.service.TaskService;
@@ -17,7 +14,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -53,7 +49,7 @@ public class TaskController {
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('MEMBER')")
     public ResponseEntity<TaskResponse> getTaskById(@PathVariable Long id) {
-        Task task =taskService.getTaskById(id);
+        Task task = taskService.getTaskById(id);
         TaskResponse response = TaskResponse.fromEntity(task);
         return ResponseEntity.ok(response);
     }
@@ -79,7 +75,7 @@ public class TaskController {
                 .body(taskService.createTask(projectId, body, principal.getUsername()));
     }
 
-    @PutMapping("/{id}")   // <--- NEW full update endpoint
+    @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or @authorizationService.hasTaskAccess(#principal.username, #id)")
     public ResponseEntity<TaskResponse> updateTask(@PathVariable Long id,
                                                    @RequestBody Map<String, Object> body,

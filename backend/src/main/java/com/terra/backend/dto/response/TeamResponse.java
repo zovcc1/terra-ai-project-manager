@@ -2,7 +2,9 @@ package com.terra.backend.dto.response;
 
 import com.terra.backend.entity.Team;
 import com.terra.backend.entity.User;
-import lombok.*;
+import lombok.Builder;
+import lombok.Getter;
+
 import java.util.Set;
 import java.util.stream.Collectors;
 
