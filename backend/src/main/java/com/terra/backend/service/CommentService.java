@@ -14,7 +14,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -35,6 +37,14 @@ public class CommentService {
                 .stream()
                 .map(CommentResponse::fromEntity)
                 .collect(Collectors.toList());
+    }
+
+    public Map<Long, List<CommentResponse>> getCommentsByTaskIds(Collection<Long> taskIds) {
+        if (taskIds == null || taskIds.isEmpty()) return Map.of();
+        return commentRepository.findByTaskIdIn(taskIds).stream()
+                .collect(Collectors.groupingBy(
+                        c -> c.getTask().getId(),
+                        Collectors.mapping(CommentResponse::fromEntity, Collectors.toList())));
     }
 
     @Transactional

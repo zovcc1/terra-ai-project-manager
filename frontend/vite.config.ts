@@ -12,6 +12,7 @@ export default defineConfig({
   vite: {
     server: {
       port: 3000,
+       allowedHosts: true
     },
     define: {
       // sockjs-client (and other Node-era libs) reference `global` which

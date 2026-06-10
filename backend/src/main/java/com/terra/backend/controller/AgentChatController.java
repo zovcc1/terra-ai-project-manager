@@ -8,6 +8,7 @@ import com.terra.backend.entity.User;
 import com.terra.backend.service.AiCommandService;
 import com.terra.backend.service.AuthenticationService;
 import com.terra.backend.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -33,7 +34,7 @@ public class AgentChatController {
 
     @PostMapping("/command")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<AiCommandResponse> processCommand(@RequestBody AiCommandRequest request) {
+    public ResponseEntity<AiCommandResponse> processCommand(@Valid @RequestBody AiCommandRequest request) {
         AiCommandResponse response = aiCommandService.processCommand(request.getMessage());
         return ResponseEntity.ok(response);
     }

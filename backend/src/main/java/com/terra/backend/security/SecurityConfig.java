@@ -70,7 +70,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:3000", "https://4799-2a02-6ea0-c10d-5486-00-13.ngrok-free.app"));
+        config.setAllowedOrigins(List.of("http://localhost:3000", "https://d1e8-2a02-6ea0-c10d-5486-00-13.ngrok-free.app"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-XSRF-TOKEN"));
         config.setAllowCredentials(true);

@@ -1,5 +1,6 @@
 package com.terra.backend.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.terra.backend.ai.LlmClient;
 import com.terra.backend.ai.PromptTemplateBuilder;
@@ -24,6 +25,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AiCommandService {
 
+    private static final int MAX_PROJECTS_IN_CONTEXT = 3;
+
     private static final Logger log = LoggerFactory.getLogger(AiCommandService.class);
     private final LlmClient llmClient;
     private final PendingActionRepository pendingActionRepository;
@@ -34,8 +37,8 @@ public class AiCommandService {
     private final ProjectService projectService;
     private final TaskService taskService;
     private final CommentService commentService;
-    private final UserService userService;
     private final AuthenticationService authenticationService;
+    private final AuthorizationService authorizationService;
 
     public AiCommandResponse processCommand(String message) {
 
@@ -50,7 +53,7 @@ public class AiCommandService {
             log.info("No projects found for userId={}, returning empty response", user.getId());
             return AiCommandResponse.builder()
                     .requiresConfirmation(false)
-                    .aiMessage("ً")
+                    .aiMessage("لا توجد لديك مشاريع حالياً. أنشئ مشروعاً أولاً.")
                     .triggerMessage(message)
                     .build();
         }
@@ -82,12 +85,11 @@ public class AiCommandService {
         IntentResponse intent = null;
         if (firstCleaned != null) {
             try {
-                // محاولة parse كـ IntentResponse
                 intent = objectMapper.readValue(firstCleaned, IntentResponse.class);
 
-                // تحقق إضافي: إذا الـ JSON يحتوي actionType فهو action وليس intent
-                // يعني الـ LLM تجاوز المرحلة الأولى مباشرة
-                if (firstCleaned.contains("\"actionType\"")) {
+                // B8: use JSON field check instead of substring match to detect action stage responses
+                JsonNode node = objectMapper.readTree(firstCleaned);
+                if (node.has("actionType")) {
                     log.warn("LLM returned action JSON in intent stage, forcing needsData=true");
                     intent = new IntentResponse();
                     intent.setNeedsData(true);
@@ -97,7 +99,6 @@ public class AiCommandService {
                 }
             } catch (Exception e) {
                 log.warn("Failed to parse intent JSON: {}", firstCleaned);
-                // إذا فشل الـ parse، افترض needsData=true
                 intent = new IntentResponse();
                 intent.setNeedsData(true);
                 intent.setProjectIds(userProjects.stream()
@@ -128,10 +129,14 @@ public class AiCommandService {
                     .build();
         }
 
+        // B6: cap projects to prevent unbounded context
         List<Long> requiredProjectIds = intent.getProjectIds();
         if (requiredProjectIds == null || requiredProjectIds.isEmpty()) {
-            requiredProjectIds = userProjects.stream().map(ProjectResponse::getId).collect(Collectors.toList());
-            log.debug("No specific projectIds in intent, defaulting to all user projects");
+            requiredProjectIds = userProjects.stream()
+                    .map(ProjectResponse::getId)
+                    .limit(MAX_PROJECTS_IN_CONTEXT)
+                    .collect(Collectors.toList());
+            log.debug("No specific projectIds in intent, defaulting to first {} user projects", MAX_PROJECTS_IN_CONTEXT);
         }
 
         log.debug("Fetching project entities for IDs: {}", requiredProjectIds);
@@ -162,7 +167,6 @@ public class AiCommandService {
             secondResponse = llmClient.generateResponse(fullPrompt);
             log.debug("Second LLM call succeeded");
         } catch (Exception e) {
-            retryWithFeedback(fullPrompt, message, e.getMessage(), user.getId());
             log.error("Second LLM call failed", e);
             return AiCommandResponse.builder()
                     .requiresConfirmation(false)
@@ -171,10 +175,8 @@ public class AiCommandService {
                     .build();
         }
 
-        redisStateService.addConversationMessage(user.getId(), "user", message);
-        redisStateService.addConversationMessage(user.getId(), "assistant", secondResponse);
-
-        String cleaned = ensureJsonResponse(secondResponse, message, user.getId());
+        // B2: pass fullPrompt to correction so it retains context
+        String cleaned = ensureJsonResponse(secondResponse, fullPrompt, user.getId());
         if (cleaned == null) {
             log.warn("Second response is not valid JSON after correction. Raw: {}", secondResponse);
             return AiCommandResponse.builder()
@@ -211,6 +213,11 @@ public class AiCommandService {
                 }
             }
 
+            // B4: store user message + normalized assistant summary (not raw JSON)
+            redisStateService.addConversationMessage(user.getId(), "user", message);
+            redisStateService.addConversationMessage(user.getId(), "assistant",
+                    llmAction.getMessage() != null ? llmAction.getMessage() : llmAction.getActionType());
+
             log.info("Executing action {} on project {}", llmAction.getActionType(),
                     targetProject != null ? targetProject.getId() : "null");
             return executeAction(user, targetProject, llmAction, message);
@@ -241,19 +248,17 @@ public class AiCommandService {
         return null;
     }
 
-    private String ensureJsonResponse(String rawResponse, String userMessage, Long userId) {
+    // B2: re-sends original full prompt so the correction attempt retains context
+    private String ensureJsonResponse(String rawResponse, String originalFullPrompt, Long userId) {
         String extracted = extractJson(rawResponse);
         if (extracted != null) {
             return extracted;
         }
-        String correctionPrompt = "Your last response was not valid JSON. Please provide ONLY the JSON object with the correct action. User command: " + userMessage;
+        String correctionPrompt = originalFullPrompt
+                + "\n\nYour previous response was not valid JSON. Respond with ONLY the JSON object.";
         try {
             String corrected = llmClient.generateResponse(correctionPrompt);
-            String correctedJson = extractJson(corrected);
-            if (correctedJson != null) {
-                redisStateService.addConversationMessage(userId, "assistant", corrected);
-                return correctedJson;
-            }
+            return extractJson(corrected);
         } catch (Exception e) {
             log.error("Correction attempt failed", e);
         }
@@ -262,10 +267,16 @@ public class AiCommandService {
 
     private List<PromptTemplateBuilder.ProjectContext> buildFullContext(List<Project> projects) {
         log.debug("Building full context for {} projects", projects.size());
+
+        // C3: batch-fetch all comments for all tasks across all projects in one query per project
         List<PromptTemplateBuilder.ProjectContext> contexts = new ArrayList<>();
         for (Project project : projects) {
             List<Task> tasks = taskService.getTaskEntitiesByProject(project.getId());
             log.debug("Project {} has {} tasks", project.getId(), tasks.size());
+
+            List<Long> taskIds = tasks.stream().map(Task::getId).collect(Collectors.toList());
+            Map<Long, List<CommentResponse>> commentsByTask = commentService.getCommentsByTaskIds(taskIds);
+
             List<PromptTemplateBuilder.TaskContext> taskContexts = new ArrayList<>();
             for (Task task : tasks) {
                 PromptTemplateBuilder.TaskContext tc = new PromptTemplateBuilder.TaskContext();
@@ -276,9 +287,9 @@ public class AiCommandService {
                 tc.setAssigneeName(task.getAssignee() != null ? task.getAssignee().getFullName() : "غير معين");
                 tc.setDueDate(task.getDueDate() != null ? task.getDueDate().toString() : "غير محدد");
 
-                List<CommentResponse> commentResponses = commentService.getCommentsByTask(task.getId());
-                log.trace("Task {} has {} comments", task.getId(), commentResponses.size());
-                List<String> recent = commentResponses.stream()
+                List<CommentResponse> taskComments = commentsByTask.getOrDefault(task.getId(), List.of());
+                log.trace("Task {} has {} comments", task.getId(), taskComments.size());
+                List<String> recent = taskComments.stream()
                         .sorted(Comparator.comparing(CommentResponse::getCreatedAt).reversed())
                         .limit(3)
                         .map(c -> c.getUserFullName() + " (" + c.getCreatedAt() + "): " +
@@ -299,8 +310,6 @@ public class AiCommandService {
     }
 
     private List<User> collectTeamMembers(List<Project> projects) {
-        // إذا كان المستخدم طلب مشروعاً واحداً، أعد أعضاءه فقط
-        // إذا كانت المشاريع متعددة، اجمع مع إزالة التكرار
         Set<Long> seen = new HashSet<>();
         List<User> members = new ArrayList<>();
         for (Project p : projects) {
@@ -311,7 +320,6 @@ public class AiCommandService {
                     }
                 }
             }
-            // أضف المدير إذا لم يكن في الفريق
             if (p.getManager() != null && seen.add(p.getManager().getId())) {
                 members.add(p.getManager());
             }
@@ -319,8 +327,8 @@ public class AiCommandService {
         return members;
     }
 
-
     private AiCommandResponse executeAction(User user, Project project, LlmActionResponse action, String commandMsg) {
+        // A2: all writes require confirmation; only NONE runs immediately
         boolean requiresConfirmation = isSensitiveAction(action);
         log.debug("Action '{}' sensitive = {}", action.getActionType(), requiresConfirmation);
 
@@ -333,9 +341,11 @@ public class AiCommandService {
                 throw new AiProcessingException("فشل تحويل الإجراء إلى نص", e);
             }
 
+            ActionType actionType = parseActionType(action.getActionType());
+
             PendingAction pendingAction = PendingAction.builder()
                     .user(user)
-                    .actionType(ActionType.valueOf(action.getActionType().toUpperCase()))
+                    .actionType(actionType)
                     .targetId(action.getTaskId())
                     .projectId(project != null ? project.getId() : action.getProjectId())
                     .proposedData(actionJson)
@@ -356,7 +366,7 @@ public class AiCommandService {
                     .build();
         } else {
             log.info("Executing non-sensitive action {} immediately", action.getActionType());
-            AiCommandResponse.ExecutedAction executed = applyLlmAction(project, action);
+            AiCommandResponse.ExecutedAction executed = applyLlmAction(user, project, action);
             return AiCommandResponse.builder()
                     .requiresConfirmation(false)
                     .executedAction(executed)
@@ -366,7 +376,7 @@ public class AiCommandService {
         }
     }
 
-    private AiCommandResponse.ExecutedAction applyLlmAction(Project project, LlmActionResponse action) {
+    private AiCommandResponse.ExecutedAction applyLlmAction(User user, Project project, LlmActionResponse action) {
         log.info("Applying action {} on project {}", action.getActionType(), project != null ? project.getId() : "null");
 
         if (project == null && !"NONE".equalsIgnoreCase(action.getActionType())) {
@@ -381,32 +391,38 @@ public class AiCommandService {
                 log.debug("Creating task '{}'", action.getTaskTitle());
                 Map<String, Object> taskData = buildCreateTaskData(action);
                 assert project != null;
-                String creatorUsername = project.getManager() != null ? project.getManager().getUsername() : "";
-                TaskResponse newTask = taskService.createTask(project.getId(), taskData, creatorUsername);
+                TaskResponse newTask = taskService.createTask(project.getId(), taskData, user.getUsername());
                 log.info("Task created with id={}", newTask.getId());
                 executed = new AiCommandResponse.ExecutedAction("CREATE", newTask.getId(), newTask.getTitle(),
                         newTask.getStatus(), newTask.getAssigneeId());
             }
             case "UPDATE", "MOVE", "ASSIGN" -> {
+                // A3: reject null taskId instead of silently doing nothing
+                if (action.getTaskId() == null) {
+                    throw new AiProcessingException("لم يتم تحديد المهمة المطلوبة");
+                }
+                // A1: verify the task belongs to a project the user can access
+                authorizationService.verifyTaskAccess(user.getUsername(), action.getTaskId());
                 log.debug("Updating task {} with action {}", action.getTaskId(), actionType);
-                if (action.getTaskId() != null) {
-                    Map<String, Object> updates = buildUpdateTaskData(action);
-                    assert project != null;
-                    String updaterUsername = project.getManager() != null ? project.getManager().getUsername() : "";
-                    TaskResponse updatedTask = taskService.updateTask(action.getTaskId(), updates, updaterUsername);
-                    log.info("Task {} updated successfully", updatedTask.getId());
-                    executed = new AiCommandResponse.ExecutedAction(actionType, updatedTask.getId(),
-                            updatedTask.getTitle(), updatedTask.getStatus(), updatedTask.getAssigneeId());
-                }
+                Map<String, Object> updates = buildUpdateTaskData(action);
+                assert project != null;
+                TaskResponse updatedTask = taskService.updateTask(action.getTaskId(), updates, user.getUsername());
+                log.info("Task {} updated successfully", updatedTask.getId());
+                executed = new AiCommandResponse.ExecutedAction(actionType, updatedTask.getId(),
+                        updatedTask.getTitle(), updatedTask.getStatus(), updatedTask.getAssigneeId());
             }
-            case "DELETE", "DELETE_TASK" -> {
-                log.info("Deleting task {}", action.getTaskId());
-                if (action.getTaskId() != null) {
-                    taskService.deleteTask(action.getTaskId());
-                    log.info("Task {} deleted", action.getTaskId());
-                    executed = new AiCommandResponse.ExecutedAction(actionType, action.getTaskId(),
-                            "Task Deleted", null, null);
+            case "DELETE" -> {
+                // A3: reject null taskId
+                if (action.getTaskId() == null) {
+                    throw new AiProcessingException("لم يتم تحديد المهمة المطلوبة");
                 }
+                // A1: verify the task belongs to a project the user can access
+                authorizationService.verifyTaskAccess(user.getUsername(), action.getTaskId());
+                log.info("Deleting task {}", action.getTaskId());
+                taskService.deleteTask(action.getTaskId(), user.getUsername());
+                log.info("Task {} deleted", action.getTaskId());
+                executed = new AiCommandResponse.ExecutedAction("DELETE", action.getTaskId(),
+                        "Task Deleted", null, null);
             }
         }
 
@@ -453,27 +469,45 @@ public class AiCommandService {
             throw new UnauthorizedException("لا تملك صلاحية لهذا الإجراء");
         }
 
+        // A5: reject if action is no longer in PENDING state
+        if (action.getStatus() != PendingAction.ActionStatus.PENDING) {
+            throw new AiProcessingException("هذا الإجراء لم يعد في حالة انتظار");
+        }
+
+        // A5: reject if expired
+        if (action.getExpiresAt() != null && action.getExpiresAt().isBefore(LocalDateTime.now())) {
+            action.setStatus(PendingAction.ActionStatus.EXPIRED);
+            pendingActionRepository.save(action);
+            throw new AiProcessingException("انتهت صلاحية هذا الإجراء");
+        }
+
         if (approved) {
+            // A6: re-verify the approver still has project access before replaying
+            String username = action.getUser().getUsername();
+            if (action.getProjectId() != null) {
+                authorizationService.verifyProjectAccess(username, action.getProjectId());
+            }
+
             action.setStatus(PendingAction.ActionStatus.APPROVED);
             log.info("Pending action {} approved", actionId);
-            if (action.getProposedData() != null) {
-                try {
-                    LlmActionResponse original = objectMapper.readValue(action.getProposedData(), LlmActionResponse.class);
-                    Project project = null;
-                    if (action.getProjectId() != null) {
-                        project = projectService.getProjectById(action.getProjectId());
-                    }
-                    log.debug("Replaying approved action {}", original.getActionType());
-                    applyLlmAction(project, original);
-                } catch (Exception e) {
-                    log.error("Failed to replay approved pending action {}", actionId, e);
-                    throw new AiProcessingException("فشل إعادة تشغيل الإجراء", e);
+
+            try {
+                LlmActionResponse original = objectMapper.readValue(action.getProposedData(), LlmActionResponse.class);
+
+                // A6: re-verify task access for non-CREATE actions
+                if (original.getTaskId() != null) {
+                    authorizationService.verifyTaskAccess(username, original.getTaskId());
                 }
-            } else if (action.getActionType() == ActionType.DELETE) {
-                if (action.getTargetId() != null) {
-                    log.info("Deleting task {} from pending action", action.getTargetId());
-                    taskService.deleteTask(action.getTargetId());
+
+                Project project = null;
+                if (action.getProjectId() != null) {
+                    project = projectService.getProjectById(action.getProjectId());
                 }
+                log.debug("Replaying approved action {}", original.getActionType());
+                applyLlmAction(action.getUser(), project, original);
+            } catch (Exception e) {
+                log.error("Failed to replay approved pending action {}", actionId, e);
+                throw new AiProcessingException("فشل إعادة تشغيل الإجراء", e);
             }
         } else {
             action.setStatus(PendingAction.ActionStatus.REJECTED);
@@ -493,26 +527,17 @@ public class AiCommandService {
         return isMember;
     }
 
+    // A2: all writes require confirmation; only NONE runs immediately
     private boolean isSensitiveAction(LlmActionResponse action) {
-        String type = action.getActionType().toUpperCase();
-        boolean sensitive = "DELETE".equals(type) || "DELETE_TASK".equals(type);
-        log.trace("Action '{}' is sensitive: {}", type, sensitive);
-        return sensitive;
+        return !"NONE".equalsIgnoreCase(action.getActionType());
     }
 
-    private void retryWithFeedback(String originalPrompt, String userMessage, String errorDescription, Long userId) {
-        String feedbackPrompt = "Your last response could not be processed. Error: " + errorDescription
-                + "\nUser command: " + userMessage
-                + "\nPlease provide ONLY the required JSON.";
+    // A4: safe ActionType parse with clean Arabic error on unknown type
+    private ActionType parseActionType(String raw) {
         try {
-            String corrected = llmClient.generateResponse(feedbackPrompt);
-            String json = extractJson(corrected);
-            if (json != null) {
-                redisStateService.addConversationMessage(userId, "assistant", corrected);
-            }
-        } catch (Exception e) {
-            log.error("Retry attempt failed", e);
+            return ActionType.valueOf(raw.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new AiProcessingException("نوع الإجراء غير معروف: '" + raw + "'");
         }
     }
-
 }

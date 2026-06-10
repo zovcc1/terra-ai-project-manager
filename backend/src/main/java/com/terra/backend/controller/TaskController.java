@@ -62,8 +62,10 @@ public class TaskController {
 
     @PatchMapping("/{id}/move")
     @PreAuthorize("hasRole('ADMIN') or @authorizationService.hasTaskAccess(#principal.username, #id)")
-    public ResponseEntity<TaskResponse> moveTask(@PathVariable Long id, @RequestParam Task.TaskStatus status, @RequestParam Integer orderIndex) {
-        return ResponseEntity.ok(taskService.moveTask(id, status, orderIndex));
+    public ResponseEntity<TaskResponse> moveTask(@PathVariable Long id, @RequestParam Task.TaskStatus status,
+                                                 @RequestParam Integer orderIndex,
+                                                 @AuthenticationPrincipal UserDetails principal) {
+        return ResponseEntity.ok(taskService.moveTask(id, status, orderIndex, principal.getUsername()));
     }
 
     @PostMapping("/project/{projectId}")
@@ -85,8 +87,9 @@ public class TaskController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or @authorizationService.hasTaskAccess(#principal.username, #id)")
-    public ResponseEntity<Void> deleteTask(@PathVariable Long id) {
-        taskService.deleteTask(id);
+    public ResponseEntity<Void> deleteTask(@PathVariable Long id,
+                                           @AuthenticationPrincipal UserDetails principal) {
+        taskService.deleteTask(id, principal.getUsername());
         return ResponseEntity.noContent().build();
     }
 }
