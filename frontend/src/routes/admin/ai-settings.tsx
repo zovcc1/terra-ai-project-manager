@@ -185,7 +185,7 @@ function Page() {
           <CardContent className="p-6">
             <h3 className="font-semibold">مفتاح API والإعدادات</h3>
             <p className="mt-1 text-sm text-muted-foreground">
-              يُخزَّن المفتاح بشكل مشفّر في قاعدة البيانات ويُستخدم لجميع المستخدمين.
+              يُخز المفتاح بشكل مشفّر في قاعدة البيانات ويُستخدم لجميع المستخدمين.
             </p>
 
             <form className="mt-5 space-y-5" onSubmit={handleSave}>

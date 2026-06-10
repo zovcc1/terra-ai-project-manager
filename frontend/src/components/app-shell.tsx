@@ -361,7 +361,7 @@ export function AppShell({
         <main className="min-w-0 flex-1">{children}</main>
       </div>
 
-      <ChatBubble persona={persona} />
+      {persona != "admin" && <ChatBubble persona={persona} />}
     </div>
   );
 }
