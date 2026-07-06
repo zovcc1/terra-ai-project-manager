@@ -59,26 +59,24 @@ function TaskDetailPage() {
     enabled: !!projectId,
   });
 
-  const { data: comments, isLoading: commentsLoading } = useQuery({
+  const { data: comments, isLoading: commentsLoading, isError: commentsError } = useQuery({
     queryKey: ["taskComments", id],
     queryFn: () => getTaskComments(id),
+    retry: false,
   });
-
-const wsInitialized = useRef(false);
 
 useEffect(() => {
   const token = localStorage.getItem("terra_token");
-  if (!token || wsInitialized.current) return;
+  if (!token) return;
 
   let cancelled = false;
+  let unsubscribe: (() => void) | undefined;
 
   wsConnect(token)
     .then(() => {
       if (cancelled) return;
-      wsInitialized.current = true;
 
-      const unsubscribe = subscribeTaskComments(id, (event: CommentEvent) => {
-        if (cancelled) return;
+      unsubscribe = subscribeTaskComments(id, (event: CommentEvent) => {
         if ("type" in event && event.type === "DELETE_COMMENT") {
           queryClient.setQueryData<Comment[]>(["taskComments", id], (old = []) =>
             old.filter((c) => c.id !== event.commentId)
@@ -91,14 +89,12 @@ useEffect(() => {
           });
         }
       });
-
-      return unsubscribe;
     })
     .catch(console.error);
 
   return () => {
     cancelled = true;
-    wsInitialized.current = false;
+    unsubscribe?.();
   };
 }, [id, queryClient]); // لا تضع taskId هنا كمتغير متغير
 
@@ -250,6 +246,10 @@ useEffect(() => {
               <div className="mt-4 space-y-4 max-h-[400px] overflow-y-auto">
                 {commentsLoading ? (
                   <div className="flex justify-center p-8"><Loader2 className="h-6 w-6 animate-spin text-primary/40" /></div>
+                ) : commentsError ? (
+                  <p className="text-center py-8 text-sm text-destructive">
+                    تعذر تحميل التعليقات. قد لا تملك صلاحية الوصول إلى هذه المهمة.
+                  </p>
                 ) : comments && comments.length > 0 ? (
                   comments.map((c) => (
                     <div key={c.id} className="flex items-start gap-3">

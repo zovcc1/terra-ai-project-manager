@@ -378,8 +378,21 @@ export interface NotificationResponse {
 export const getUnreadNotifications = (): Promise<NotificationResponse[]> =>
   apiFetch<NotificationResponse[]>("/notifications/unread");
 
-export const getRecentNotifications = (): Promise<NotificationResponse[]> =>
-  apiFetch<NotificationResponse[]>("/notifications/recent");
+export interface Page<T> {
+  content: T[];
+  totalPages: number;
+  totalElements: number;
+  number: number;
+  size: number;
+}
+
+export const getRecentNotifications = (
+  page = 0,
+  size = 20,
+): Promise<Page<NotificationResponse>> =>
+  apiFetch<Page<NotificationResponse>>(
+    `/notifications/recent?page=${page}&size=${size}`,
+  );
 
 export const markNotificationsAsRead = (notificationIds: number[]): Promise<void> =>
   apiFetch<void>("/notifications/read", {

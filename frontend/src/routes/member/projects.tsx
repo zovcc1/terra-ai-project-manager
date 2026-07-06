@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { AppShell, PageHeader } from "@/components/app-shell";
@@ -44,8 +44,11 @@ import {
   getTaskComments,
   createComment,
   getMyProjects,
+  getAuthToken,
 } from "@/lib/api";
 import type { Task, Comment, Project } from "@/lib/api";
+import { wsConnect, subscribeTaskComments } from "@/lib/websocket";
+import type { CommentEvent } from "@/lib/websocket";
 
 export const Route = createFileRoute("/member/projects")({
   beforeLoad: () => requireRole("/member"),
@@ -117,6 +120,39 @@ function TaskDetailDialog({
     if (!comment.trim()) return;
     commentMutation.mutate(comment.trim());
   };
+
+  useEffect(() => {
+    if (!open) return;
+    const token = getAuthToken();
+    if (!token) return;
+
+    let cancelled = false;
+    let unsubscribe: (() => void) | undefined;
+
+    wsConnect(token)
+      .then(() => {
+        if (cancelled) return;
+        unsubscribe = subscribeTaskComments(task.id, (event: CommentEvent) => {
+          if ("type" in event && event.type === "DELETE_COMMENT") {
+            queryClient.setQueryData<Comment[]>(["taskComments", task.id], (old = []) =>
+              old.filter((c) => c.id !== event.commentId),
+            );
+          } else {
+            const comment = event as Comment;
+            queryClient.setQueryData<Comment[]>(["taskComments", task.id], (old = []) => {
+              if (old.some((c) => c.id === comment.id)) return old;
+              return [...old, comment];
+            });
+          }
+        });
+      })
+      .catch(console.error);
+
+    return () => {
+      cancelled = true;
+      unsubscribe?.();
+    };
+  }, [task.id, open, queryClient]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

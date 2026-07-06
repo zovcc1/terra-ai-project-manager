@@ -47,8 +47,9 @@ public class TaskController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('MEMBER')")
-    public ResponseEntity<TaskResponse> getTaskById(@PathVariable Long id) {
+    @PreAuthorize("hasRole('ADMIN') or @authorizationService.hasTaskAccess(#principal.username, #id)")
+    public ResponseEntity<TaskResponse> getTaskById(@PathVariable Long id,
+                                                    @AuthenticationPrincipal UserDetails principal) {
         Task task = taskService.getTaskById(id);
         TaskResponse response = TaskResponse.fromEntity(task);
         return ResponseEntity.ok(response);

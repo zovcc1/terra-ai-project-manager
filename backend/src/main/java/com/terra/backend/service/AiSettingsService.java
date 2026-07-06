@@ -16,12 +16,48 @@ import java.util.Base64;
 public class AiSettingsService {
     private static final String ALGORITHM = "AES";
     private static final String TRANSFORMATION = "AES";
+    private static final String DEFAULT_MODEL = "openai/gpt-oss-120b:free";
     private final AiSettingsRepository repository;
     @Value("${ai.encryption.key}")
     private String secretKey;
+    @Value("${ai.openai.api.url:https://openrouter.ai/api/v1/chat/completions}")
+    private String fallbackApiUrl;
 
     public AiSettingsService(AiSettingsRepository repository) {
         this.repository = repository;
+    }
+
+    /**
+     * Resolved model/endpoint/key for the LLM client, read from the DB so an admin
+     * can change them from the settings page without a redeploy.
+     */
+    public record LlmConfig(String apiKey, String model, String apiUrl) {}
+
+    public LlmConfig getActiveLlmConfig() {
+        AiSettings settings = repository.findById(1L).orElse(new AiSettings());
+        if (!settings.isEnabled()) {
+            return new LlmConfig(null, null, null);
+        }
+        String key = decrypt(settings.getApiKeyEncrypted());
+        String model = firstNonBlank(settings.getModel(), settings.getDefaultModel(), DEFAULT_MODEL);
+        String url = resolveApiUrl(settings.getProvider());
+        return new LlmConfig(key, model, url);
+    }
+
+    private String resolveApiUrl(String provider) {
+        String p = provider == null ? "" : provider.trim().toLowerCase();
+        return switch (p) {
+            case "openai" -> "https://api.openai.com/v1/chat/completions";
+            case "openrouter" -> "https://openrouter.ai/api/v1/chat/completions";
+            default -> fallbackApiUrl;
+        };
+    }
+
+    private String firstNonBlank(String... values) {
+        for (String value : values) {
+            if (value != null && !value.isBlank()) return value;
+        }
+        return null;
     }
 
     public AiSettingsResponse getSettings() {
@@ -85,16 +121,6 @@ public class AiSettingsService {
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }
-    }
-
-    /**
-     * Returns the decrypted API key for use by the LLM client.
-     */
-    public String getDecryptedApiKey() {
-        AiSettings settings = repository.findById(1L).orElse(new AiSettings());
-        if (!settings.isEnabled()) return null;
-        String encrypted = settings.getApiKeyEncrypted();
-        return decrypt(encrypted);
     }
 
     private String maskApiKey(String key) {

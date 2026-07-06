@@ -34,6 +34,29 @@ let connectPromise: Promise<void> | null = null;
 let pendingNotificationCallbacks: Array<(notification: NotificationResponse) => void> = [];
 let activeNotificationSub: StompSubscription | null = null;
 
+// Task-comment subscriptions must be re-created on every (re)connect since
+// @stomp/stompjs does not auto-resubscribe after a dropped connection.
+type CommentSubEntry = {
+  taskId: number;
+  callback: (event: CommentEvent) => void;
+  sub: StompSubscription | null;
+};
+let commentSubs: CommentSubEntry[] = [];
+
+function createCommentStompSub(entry: CommentSubEntry): void {
+  if (!stompClient?.connected) return;
+  entry.sub = stompClient.subscribe(
+    `/topic/task/${entry.taskId}/comments`,
+    (message) => {
+      try {
+        entry.callback(JSON.parse(message.body) as CommentEvent);
+      } catch {
+        console.error("[WS] Failed to parse comment event", message.body);
+      }
+    },
+  );
+}
+
 /** Connect (idempotent — safe to call multiple times). */
 export function wsConnect(token: string): Promise<void> {
   if (stompClient?.connected) return Promise.resolve();
@@ -69,7 +92,13 @@ export function wsConnect(token: string): Promise<void> {
             }
           });
         }
-        
+
+        // Re-establish comment-topic subscriptions lost on the old connection.
+        commentSubs.forEach((entry) => {
+          entry.sub = null;
+          createCommentStompSub(entry);
+        });
+
         resolve();
         connectPromise = null;
       },
@@ -105,6 +134,7 @@ export function wsDisconnect(): void {
     connectPromise = null;
     activeNotificationSub = null;
     pendingNotificationCallbacks = [];
+    commentSubs = [];
   }
 }
 
@@ -151,24 +181,16 @@ export function subscribeTaskComments(
   taskId: number,
   callback: (event: CommentEvent) => void,
 ): () => void {
-  if (!stompClient?.connected) {
-    console.warn("[WS] subscribeTaskComments called before connection");
-    return () => {};
-  }
+  const entry: CommentSubEntry = { taskId, callback, sub: null };
+  commentSubs.push(entry);
+  // No-op if not yet connected; onConnect will create it once connected.
+  createCommentStompSub(entry);
 
-  const sub: StompSubscription = stompClient.subscribe(
-    `/topic/task/${taskId}/comments`,
-    (message) => {
-      try {
-        const payload = JSON.parse(message.body) as CommentEvent;
-        callback(payload);
-      } catch {
-        console.error("[WS] Failed to parse comment event", message.body);
-      }
-    },
-  );
-
-  return () => sub.unsubscribe();
+  return () => {
+    entry.sub?.unsubscribe();
+    const index = commentSubs.indexOf(entry);
+    if (index !== -1) commentSubs.splice(index, 1);
+  };
 }
 
 /**
@@ -179,28 +201,33 @@ export function subscribeTaskComments(
 export function subscribeNotifications(
   callback: (notification: NotificationResponse) => void,
 ): () => void {
-  // If already connected and we have an active subscription, just add the callback
-  if (stompClient?.connected && activeNotificationSub) {
-    pendingNotificationCallbacks.push(callback);
-    // Return a function to remove this specific callback
-    return () => {
-      const index = pendingNotificationCallbacks.indexOf(callback);
-      if (index !== -1) pendingNotificationCallbacks.splice(index, 1);
-      // If no callbacks left, unsubscribe from the topic to save resources
-      if (pendingNotificationCallbacks.length === 0 && activeNotificationSub) {
-        activeNotificationSub.unsubscribe();
-        activeNotificationSub = null;
-      }
-    };
+  // Always register so the callback survives (re)connects.
+  pendingNotificationCallbacks.push(callback);
+
+  // Connected but no STOMP subscription yet (registered AFTER onConnect ran) → create it now.
+  if (stompClient?.connected && !activeNotificationSub) {
+    activeNotificationSub = stompClient.subscribe(
+      "/user/queue/notifications",
+      (message) => {
+        try {
+          const payload = JSON.parse(message.body) as NotificationResponse;
+          pendingNotificationCallbacks.forEach((cb) => cb(payload));
+        } catch {
+          console.error("[WS] Failed to parse notification", message.body);
+        }
+      },
+    );
   }
 
-  // Not connected yet – store the callback for later
-  pendingNotificationCallbacks.push(callback);
-  
-  // Return a function that removes the callback from pending queue
+  // Return a function that removes the callback and tears down the
+  // subscription once nobody is listening anymore.
   return () => {
     const index = pendingNotificationCallbacks.indexOf(callback);
     if (index !== -1) pendingNotificationCallbacks.splice(index, 1);
+    if (pendingNotificationCallbacks.length === 0 && activeNotificationSub) {
+      activeNotificationSub.unsubscribe();
+      activeNotificationSub = null;
+    }
   };
 }
 

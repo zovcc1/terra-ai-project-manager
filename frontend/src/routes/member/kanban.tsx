@@ -18,10 +18,10 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, ArrowRight, MessageSquare, Loader2, AlertCircle } from "lucide-react";
-import { getMyTasks, updateTaskStatus, getTaskComments, createComment } from "@/lib/api";
+import { getMyTasks, updateTaskStatus, getTaskComments, createComment, getAuthToken } from "@/lib/api";
 import type { Task, Comment } from "@/lib/api";
-import { subscribeKanban, wsIsConnected } from "@/lib/websocket";
-import type { KanbanEvent } from "@/lib/websocket";
+import { subscribeKanban, wsIsConnected, subscribeTaskComments, wsConnect } from "@/lib/websocket";
+import type { KanbanEvent, CommentEvent } from "@/lib/websocket";
 
 export const Route = createFileRoute("/member/kanban")({
   beforeLoad: () => requireRole("/member"),
@@ -91,6 +91,39 @@ function TaskDetailDialog({
     if (!comment.trim()) return;
     commentMutation.mutate(comment.trim());
   };
+
+  useEffect(() => {
+    if (!open) return;
+    const token = getAuthToken();
+    if (!token) return;
+
+    let cancelled = false;
+    let unsubscribe: (() => void) | undefined;
+
+    wsConnect(token)
+      .then(() => {
+        if (cancelled) return;
+        unsubscribe = subscribeTaskComments(task.id, (event: CommentEvent) => {
+          if ("type" in event && event.type === "DELETE_COMMENT") {
+            queryClient.setQueryData<Comment[]>(["taskComments", task.id], (old = []) =>
+              old.filter((c) => c.id !== event.commentId),
+            );
+          } else {
+            const comment = event as Comment;
+            queryClient.setQueryData<Comment[]>(["taskComments", task.id], (old = []) => {
+              if (old.some((c) => c.id === comment.id)) return old;
+              return [...old, comment];
+            });
+          }
+        });
+      })
+      .catch(console.error);
+
+    return () => {
+      cancelled = true;
+      unsubscribe?.();
+    };
+  }, [task.id, open, queryClient]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
