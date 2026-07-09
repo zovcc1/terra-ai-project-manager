@@ -2,7 +2,7 @@ import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
 import { useState, useCallback, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { AppShell, PageHeader } from "@/components/app-shell";
+import { AppShell, PageHeader, useHeaderSearch } from "@/components/app-shell";
 import { requireRole } from "@/lib/route-guards";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -548,7 +548,12 @@ function ProjectDetailPage({ projectId }: { projectId: number }) {
     queryFn: getMyTasks,
   });
 
-  const tasks = allMyTasks ? allMyTasks.filter((t) => t.projectId === id) : [];
+  const { query } = useHeaderSearch();
+  const tasks = allMyTasks
+    ? allMyTasks
+        .filter((t) => t.projectId === id)
+        .filter((t) => t.title.toLowerCase().includes(query.toLowerCase()))
+    : [];
 
   const { data: members, isLoading: membersLoading } = useQuery({
     queryKey: ["projectMembers", id],

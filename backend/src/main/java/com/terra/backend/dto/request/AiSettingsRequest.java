@@ -9,4 +9,5 @@ public class AiSettingsRequest {
     private String apiKey;
     private Boolean enabled;
     private String defaultModel;
+    private String apiUrl;
 }

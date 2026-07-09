@@ -32,6 +32,30 @@ import {
 import { requireRole } from "@/lib/route-guards";
 import { getAiSettings, updateAiSettings, AiSettings } from "@/lib/api";
 
+/** Known providers: prefilled model + API URL on selection (still freely editable after). */
+const PROVIDER_PRESETS: Record<string, { model: string; apiUrl: string }> = {
+  openrouter: {
+    model: "openai/gpt-oss-120b:free",
+    apiUrl: "https://openrouter.ai/api/v1/chat/completions",
+  },
+  openai: {
+    model: "gpt-4o-mini",
+    apiUrl: "https://api.openai.com/v1/chat/completions",
+  },
+  deepseek: {
+    model: "deepseek-chat",
+    apiUrl: "https://api.deepseek.com/v1/chat/completions",
+  },
+  anthropic: {
+    model: "claude-3-5-sonnet-latest",
+    apiUrl: "https://api.anthropic.com/v1/messages",
+  },
+  google: {
+    model: "gemini-1.5-flash",
+    apiUrl: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+  },
+};
+
 export const Route = createFileRoute("/admin/ai-settings")({
   beforeLoad: () => requireRole("/admin"),
   head: () => ({ meta: [{ title: "إعدادات الذكاء الاصطناعي — تيرّا" }] }),
@@ -156,6 +180,12 @@ function Page() {
                   {(settings as any)?.model || "—"}
                 </dd>
               </div>
+              <div className="flex items-center justify-between gap-3">
+                <dt className="shrink-0 text-muted-foreground">رابط API</dt>
+                <dd className="truncate font-mono text-xs" dir="ltr" title={settings?.apiUrl || ""}>
+                  {settings?.apiUrl || "—"}
+                </dd>
+              </div>
               <div className="flex items-center justify-between">
                 <dt className="text-muted-foreground">المفتاح</dt>
                 <dd className="font-mono text-xs" dir="ltr">
@@ -195,15 +225,16 @@ function Page() {
                   <Select
                     value={localSettings.provider || ""}
                     onValueChange={(v) => {
-                      setLocalSettings((p) => ({ ...p, provider: v }));
-                      if (v === "openrouter") {
-                        setLocalSettings((p) => ({
-                          ...p,
-                          provider: v,
-                          model: "openai/gpt-oss-120b:free",
-                          defaultModel: "openai/gpt-oss-120b:free",
-                        }));
-                      }
+                      const preset = PROVIDER_PRESETS[v];
+                      setLocalSettings((p) => ({
+                        ...p,
+                        provider: v,
+                        ...(preset && {
+                          model: preset.model,
+                          defaultModel: preset.model,
+                          apiUrl: preset.apiUrl,
+                        }),
+                      }));
                     }}
                   >
                     <SelectTrigger>
@@ -212,8 +243,10 @@ function Page() {
                     <SelectContent>
                       <SelectItem value="openrouter">OpenRouter (مُوصى به)</SelectItem>
                       <SelectItem value="openai">OpenAI (GPT)</SelectItem>
+                      <SelectItem value="deepseek">DeepSeek</SelectItem>
                       <SelectItem value="anthropic">Anthropic (Claude)</SelectItem>
                       <SelectItem value="google">Google (Gemini)</SelectItem>
+                      <SelectItem value="custom">مخصّص (Custom)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -226,6 +259,20 @@ function Page() {
                     dir="ltr"
                     className="font-mono text-sm"
                   />
+                </div>
+                <div className="space-y-2 sm:col-span-2">
+                  <Label>رابط API</Label>
+                  <Input
+                    value={localSettings.apiUrl || ""}
+                    onChange={(e) => setLocalSettings((p) => ({ ...p, apiUrl: e.target.value }))}
+                    placeholder="مثال: https://api.deepseek.com/v1/chat/completions"
+                    dir="ltr"
+                    className="font-mono text-sm"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    يُملأ تلقائيًا عند اختيار المزوّد، ويمكن تعديله لاستخدام أي رابط API مخصّص
+                    (متوافق مع صيغة OpenAI).
+                  </p>
                 </div>
               </div>
 
@@ -321,8 +368,10 @@ function providerLabel(v: string) {
     {
       openrouter: "OpenRouter",
       openai: "OpenAI (GPT)",
+      deepseek: "DeepSeek",
       anthropic: "Anthropic (Claude)",
       google: "Google (Gemini)",
+      custom: "مخصّص",
       none: "غير محدد",
     }[v] ?? v
   );

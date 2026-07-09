@@ -325,6 +325,7 @@ export interface AiSettings {
   apiKeyMasked: string;
   enabled: boolean;
   defaultModel: string;
+  apiUrl: string;
 }
 
 export const getAiSettings = (): Promise<AiSettings> => apiFetch<AiSettings>("/ai/settings");

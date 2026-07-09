@@ -26,4 +26,7 @@ public class AiSettings {
     private boolean enabled;
 
     private String defaultModel;
+
+    @Column(name = "api_url")
+    private String apiUrl;
 }

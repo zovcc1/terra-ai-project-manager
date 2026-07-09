@@ -1,6 +1,6 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { Bell, Search, Leaf, LogOut, Menu } from "lucide-react";
-import { ReactNode, useState, useEffect, useRef } from "react";
+import { ReactNode, useState, useEffect, useRef, createContext, useContext } from "react";
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import { ar } from "date-fns/locale/ar";
@@ -65,6 +65,21 @@ const navByPersona: Record<string, { name: string; items: NavItem[] }> = {
 
 type Persona = "admin" | "manager" | "member" | "user";
 
+/**
+ * Header search term for the currently viewed page. Filters that page's primary list.
+ * Owned by the root layout (see routes/__root.tsx) so it's a real ancestor of every
+ * route component — AppShell is rendered *by* the page, not the other way around, so
+ * AppShell can't own this state itself and have page components read it back out.
+ */
+export const SearchContext = createContext<{ query: string; setQuery: (v: string) => void }>({
+  query: "",
+  setQuery: () => {},
+});
+
+export function useHeaderSearch() {
+  return useContext(SearchContext);
+}
+
 export function AppShell({
   persona,
   children,
@@ -81,6 +96,7 @@ export function AppShell({
   const [page, setPage] = useState(0);
   const pageRef = useRef(page);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { query: searchQuery, setQuery: setSearchQuery } = useContext(SearchContext);
 
   useEffect(() => {
     pageRef.current = page;
@@ -229,7 +245,12 @@ export function AppShell({
           </Link>
           <div className="relative mx-6 hidden flex-1 md:block">
             <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input placeholder="ابحث عن مشروع، مهمة، أو شخص…" className="bg-card pr-10" />
+            <Input
+              placeholder="ابحث عن مشروع، مهمة، أو شخص…"
+              className="bg-card pr-10"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
           <div className="flex items-center gap-3 mr-auto">
             <Popover open={notificationsOpen} onOpenChange={setNotificationsOpen}>

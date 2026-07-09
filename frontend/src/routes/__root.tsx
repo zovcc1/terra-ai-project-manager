@@ -1,9 +1,11 @@
+import { useState, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -11,6 +13,7 @@ import {
 import appCss from "../styles.css?url";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider, useAuth } from "@/lib/auth";
+import { SearchContext } from "@/components/app-shell";
 
 // ========== 404 Not Found ==========
 function NotFoundComponent() {
@@ -113,6 +116,16 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function AppContent() {
   const { isLoading } = useAuth();
 
+  // Header search term, shared with every route via SearchContext. Owned here (a real
+  // ancestor of all route components) rather than in AppShell, which is rendered *by*
+  // each page — a page can't read back out a context that AppShell itself provides.
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    setSearchQuery("");
+  }, [pathname]);
+
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center bg-background" dir="rtl">
@@ -124,7 +137,11 @@ function AppContent() {
     );
   }
 
-  return <Outlet />;
+  return (
+    <SearchContext.Provider value={{ query: searchQuery, setQuery: setSearchQuery }}>
+      <Outlet />
+    </SearchContext.Provider>
+  );
 }
 
 // ========== Root Component ==========

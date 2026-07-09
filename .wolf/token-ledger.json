@@ -1,0 +1,1280 @@
+{
+  "version": 1,
+  "created_at": "2026-06-24T11:55:00.090Z",
+  "lifetime": {
+    "total_tokens_estimated": 173663,
+    "total_reads": 98,
+    "total_writes": 71,
+    "total_sessions": 19,
+    "anatomy_hits": 92,
+    "anatomy_misses": 5,
+    "repeated_reads_blocked": 30,
+    "estimated_savings_vs_bare_cli": 93295
+  },
+  "sessions": [
+    {
+      "id": "session-2026-06-24-1455",
+      "started": "2026-06-24T11:55:33.975Z",
+      "ended": "2026-06-24T12:00:00.901Z",
+      "reads": [
+        {
+          "file": "/home/kasem/.claude/projects/-home-kasem-Documents-freelance-ai-project-manager/memory/project_terra.md",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/docker-compose.yml",
+          "tokens_estimated": 383,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/.env.example",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/pom.xml",
+          "tokens_estimated": 975,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/package.json",
+          "tokens_estimated": 952,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/resources/application.properties",
+          "tokens_estimated": 439,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/.gitignore",
+          "tokens_estimated": 35,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "/home/kasem/.claude/plans/make-readme-md-for-the-steady-glade.md",
+          "tokens_estimated": 1708,
+          "action": "create"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/README.md",
+          "tokens_estimated": 2342,
+          "action": "create"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 2784,
+        "output_tokens_estimated": 4050,
+        "reads_count": 7,
+        "writes_count": 2,
+        "repeated_reads_blocked": 0,
+        "anatomy_lookups": 5
+      }
+    },
+    {
+      "id": "session-2026-07-04-1627",
+      "started": "2026-07-04T13:27:57.901Z",
+      "ended": "2026-07-04T13:30:56.807Z",
+      "reads": [
+        {
+          "file": "/home/kasem/.claude/projects/-home-kasem-Documents-freelance-ai-project-manager/memory/project_terra.md",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/config/WebSocketConfig.java",
+          "tokens_estimated": 965,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/service/WebSocketService.java",
+          "tokens_estimated": 600,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/service/CommentService.java",
+          "tokens_estimated": 1461,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/service/NotificationService.java",
+          "tokens_estimated": 1075,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/controller/CommentController.java",
+          "tokens_estimated": 1135,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/controller/NotificationController.java",
+          "tokens_estimated": 740,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/security/CustomUserDetailsService.java",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [],
+      "totals": {
+        "input_tokens_estimated": 5976,
+        "output_tokens_estimated": 0,
+        "reads_count": 8,
+        "writes_count": 0,
+        "repeated_reads_blocked": 0,
+        "anatomy_lookups": 7
+      }
+    },
+    {
+      "id": "session-2026-07-04-1627",
+      "started": "2026-07-04T13:27:57.901Z",
+      "ended": "2026-07-04T13:36:11.585Z",
+      "reads": [
+        {
+          "file": "/home/kasem/.claude/projects/-home-kasem-Documents-freelance-ai-project-manager/memory/project_terra.md",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/config/WebSocketConfig.java",
+          "tokens_estimated": 965,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/service/WebSocketService.java",
+          "tokens_estimated": 600,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/service/CommentService.java",
+          "tokens_estimated": 1461,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/service/NotificationService.java",
+          "tokens_estimated": 1075,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/controller/CommentController.java",
+          "tokens_estimated": 1135,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/controller/NotificationController.java",
+          "tokens_estimated": 740,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/security/CustomUserDetailsService.java",
+          "tokens_estimated": 391,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/lib/websocket.ts",
+          "tokens_estimated": 2118,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/lib/use-websocket.ts",
+          "tokens_estimated": 711,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/lib/api.ts",
+          "tokens_estimated": 4269,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/manager/tasks.$taskId.tsx",
+          "tokens_estimated": 5204,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/components/app-shell.tsx",
+          "tokens_estimated": 4197,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/member/tasks.$taskId.tsx",
+          "tokens_estimated": 5204,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [],
+      "totals": {
+        "input_tokens_estimated": 28070,
+        "output_tokens_estimated": 0,
+        "reads_count": 14,
+        "writes_count": 0,
+        "repeated_reads_blocked": 18,
+        "anatomy_lookups": 13
+      }
+    },
+    {
+      "id": "session-2026-07-04-1647",
+      "started": "2026-07-04T13:47:39.321Z",
+      "ended": "2026-07-04T14:01:38.381Z",
+      "reads": [
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/member/tasks.$taskId.tsx",
+          "tokens_estimated": 5204,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/manager/tasks.$taskId.tsx",
+          "tokens_estimated": 5204,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/lib/api.ts",
+          "tokens_estimated": 4269,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/lib/websocket.ts",
+          "tokens_estimated": 345,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/member/tasks.$taskId.tsx",
+          "tokens_estimated": 275,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/manager/tasks.$taskId.tsx",
+          "tokens_estimated": 275,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/lib/api.ts",
+          "tokens_estimated": 96,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 14677,
+        "output_tokens_estimated": 991,
+        "reads_count": 3,
+        "writes_count": 4,
+        "repeated_reads_blocked": 1,
+        "anatomy_lookups": 3
+      }
+    },
+    {
+      "id": "session-2026-07-04-2041",
+      "started": "2026-07-04T17:41:39.665Z",
+      "ended": "2026-07-04T18:18:43.331Z",
+      "reads": [
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/controller/TaskController.java",
+          "tokens_estimated": 1323,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/exception/GlobalExceptionHandler.java",
+          "tokens_estimated": 1070,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/member/tasks.$taskId.tsx",
+          "tokens_estimated": 5178,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/manager/tasks.$taskId.tsx",
+          "tokens_estimated": 5178,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/controller/TaskController.java",
+          "tokens_estimated": 134,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/exception/GlobalExceptionHandler.java",
+          "tokens_estimated": 64,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/exception/GlobalExceptionHandler.java",
+          "tokens_estimated": 239,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/member/tasks.$taskId.tsx",
+          "tokens_estimated": 55,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/member/tasks.$taskId.tsx",
+          "tokens_estimated": 126,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/manager/tasks.$taskId.tsx",
+          "tokens_estimated": 55,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/manager/tasks.$taskId.tsx",
+          "tokens_estimated": 126,
+          "action": "edit"
+        },
+        {
+          "file": "/tmp/claude-1000/-home-kasem-Documents-freelance-ai-project-manager/0d6c237f-9b34-4416-afe9-3795ce580951/scratchpad/relaunch_backend.sh",
+          "tokens_estimated": 125,
+          "action": "create"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 12749,
+        "output_tokens_estimated": 924,
+        "reads_count": 4,
+        "writes_count": 8,
+        "repeated_reads_blocked": 2,
+        "anatomy_lookups": 4
+      }
+    },
+    {
+      "id": "session-2026-07-04-2126",
+      "started": "2026-07-04T18:26:19.825Z",
+      "ended": "2026-07-04T18:49:40.199Z",
+      "reads": [
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/service/CommentService.java",
+          "tokens_estimated": 1461,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/lib/websocket.ts",
+          "tokens_estimated": 2146,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/member/tasks.$taskId.tsx",
+          "tokens_estimated": 5241,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/config/WebSocketConfig.java",
+          "tokens_estimated": 965,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/service/WebSocketService.java",
+          "tokens_estimated": 600,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/components/app-shell.tsx",
+          "tokens_estimated": 4197,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "/home/kasem/.claude/plans/the-comment-issue-inside-lexical-dragon.md",
+          "tokens_estimated": 1592,
+          "action": "create"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/lib/websocket.ts",
+          "tokens_estimated": 269,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/lib/websocket.ts",
+          "tokens_estimated": 79,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/lib/websocket.ts",
+          "tokens_estimated": 29,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/lib/websocket.ts",
+          "tokens_estimated": 134,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 14610,
+        "output_tokens_estimated": 2103,
+        "reads_count": 6,
+        "writes_count": 5,
+        "repeated_reads_blocked": 1,
+        "anatomy_lookups": 6
+      }
+    },
+    {
+      "id": "session-2026-07-04-2211",
+      "started": "2026-07-04T19:11:40.546Z",
+      "ended": "2026-07-04T19:26:10.282Z",
+      "reads": [
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/dto/LoginRequest.java",
+          "tokens_estimated": 98,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/controller/CommentController.java",
+          "tokens_estimated": 1135,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/components/app-shell.tsx",
+          "tokens_estimated": 4197,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [],
+      "totals": {
+        "input_tokens_estimated": 5430,
+        "output_tokens_estimated": 0,
+        "reads_count": 3,
+        "writes_count": 0,
+        "repeated_reads_blocked": 0,
+        "anatomy_lookups": 3
+      }
+    },
+    {
+      "id": "session-2026-07-04-2211",
+      "started": "2026-07-04T19:11:40.546Z",
+      "ended": "2026-07-04T19:35:58.136Z",
+      "reads": [
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/dto/LoginRequest.java",
+          "tokens_estimated": 98,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/controller/CommentController.java",
+          "tokens_estimated": 1135,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/components/app-shell.tsx",
+          "tokens_estimated": 4197,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [],
+      "totals": {
+        "input_tokens_estimated": 5430,
+        "output_tokens_estimated": 0,
+        "reads_count": 3,
+        "writes_count": 0,
+        "repeated_reads_blocked": 0,
+        "anatomy_lookups": 3
+      }
+    },
+    {
+      "id": "session-2026-07-05-0214",
+      "started": "2026-07-05T23:14:15.566Z",
+      "ended": "2026-07-06T00:32:19.913Z",
+      "reads": [
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/resources/application.properties",
+          "tokens_estimated": 439,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/ai/OpenAiClient.java",
+          "tokens_estimated": 674,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/entity/AiSettings.java",
+          "tokens_estimated": 156,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/service/AiSettingsService.java",
+          "tokens_estimated": 1463,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/repository/AiSettingsRepository.java",
+          "tokens_estimated": 83,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/config/DataInitializer.java",
+          "tokens_estimated": 1307,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/controller/AiSettingsController.java",
+          "tokens_estimated": 292,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/dto/request/AiSettingsRequest.java",
+          "tokens_estimated": 71,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/dto/response/AiSettingsResponse.java",
+          "tokens_estimated": 82,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/admin/ai-settings.tsx",
+          "tokens_estimated": 3675,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "/home/kasem/.claude/plans/check-all-websocket-problems-enchanted-matsumoto.md",
+          "tokens_estimated": 1814,
+          "action": "create"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/service/AiSettingsService.java",
+          "tokens_estimated": 534,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/service/AiSettingsService.java",
+          "tokens_estimated": 13,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/ai/OpenAiClient.java",
+          "tokens_estimated": 494,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/resources/application.properties",
+          "tokens_estimated": 79,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 8242,
+        "output_tokens_estimated": 2934,
+        "reads_count": 10,
+        "writes_count": 5,
+        "repeated_reads_blocked": 5,
+        "anatomy_lookups": 9
+      }
+    },
+    {
+      "id": "session-2026-07-06-0334",
+      "started": "2026-07-06T00:34:39.760Z",
+      "ended": "2026-07-06T00:46:12.304Z",
+      "reads": [
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/lib/websocket.ts",
+          "tokens_estimated": 2500,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/config/WebSocketConfig.java",
+          "tokens_estimated": 965,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/service/WebSocketService.java",
+          "tokens_estimated": 600,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/lib/route-guards.ts",
+          "tokens_estimated": 446,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [],
+      "totals": {
+        "input_tokens_estimated": 4511,
+        "output_tokens_estimated": 0,
+        "reads_count": 4,
+        "writes_count": 0,
+        "repeated_reads_blocked": 0,
+        "anatomy_lookups": 4
+      }
+    },
+    {
+      "id": "session-2026-07-06-0334",
+      "started": "2026-07-06T00:34:39.760Z",
+      "ended": "2026-07-06T00:58:57.517Z",
+      "reads": [
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/lib/websocket.ts",
+          "tokens_estimated": 2500,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/config/WebSocketConfig.java",
+          "tokens_estimated": 965,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/service/WebSocketService.java",
+          "tokens_estimated": 600,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/lib/route-guards.ts",
+          "tokens_estimated": 446,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/manager/tasks.$taskId.tsx",
+          "tokens_estimated": 5241,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/lib/use-websocket.ts",
+          "tokens_estimated": 711,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/member/kanban.tsx",
+          "tokens_estimated": 4552,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/member/projects.tsx",
+          "tokens_estimated": 7646,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/member/tasks.$taskId.tsx",
+          "tokens_estimated": 5241,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "/home/kasem/.claude/plans/suggest-the-fix-for-delightful-anchor.md",
+          "tokens_estimated": 2067,
+          "action": "create"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/member/kanban.tsx",
+          "tokens_estimated": 91,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/member/kanban.tsx",
+          "tokens_estimated": 378,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/member/projects.tsx",
+          "tokens_estimated": 17,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/member/projects.tsx",
+          "tokens_estimated": 76,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/member/projects.tsx",
+          "tokens_estimated": 378,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/member/tasks.$taskId.tsx",
+          "tokens_estimated": 13,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/member/tasks.$taskId.tsx",
+          "tokens_estimated": 5,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 27902,
+        "output_tokens_estimated": 3025,
+        "reads_count": 9,
+        "writes_count": 8,
+        "repeated_reads_blocked": 0,
+        "anatomy_lookups": 9
+      }
+    },
+    {
+      "id": "session-2026-07-06-0401",
+      "started": "2026-07-06T01:01:16.010Z",
+      "ended": "2026-07-06T01:07:05.841Z",
+      "reads": [
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/Dockerfile",
+          "tokens_estimated": 38,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/docker-entrypoint.sh",
+          "tokens_estimated": 190,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/.dockerignore",
+          "tokens_estimated": 4,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/docker-compose.yml",
+          "tokens_estimated": 383,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/tmp/claude-1000/-home-kasem-Documents-freelance-ai-project-manager/48aaccb3-2637-4514-8d34-51f9244a58de/tasks/bkhe98gew.output",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "/home/kasem/.claude/plans/push-docker-backend-to-wild-hickey.md",
+          "tokens_estimated": 688,
+          "action": "create"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 615,
+        "output_tokens_estimated": 688,
+        "reads_count": 5,
+        "writes_count": 1,
+        "repeated_reads_blocked": 0,
+        "anatomy_lookups": 4
+      }
+    },
+    {
+      "id": "session-2026-07-09-0745",
+      "started": "2026-07-09T04:45:21.793Z",
+      "ended": "2026-07-09T05:18:29.211Z",
+      "reads": [
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/admin/ai-settings.tsx",
+          "tokens_estimated": 3675,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/service/AiSettingsService.java",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/entity/AiSettings.java",
+          "tokens_estimated": 156,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/dto/request/AiSettingsRequest.java",
+          "tokens_estimated": 71,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/dto/response/AiSettingsResponse.java",
+          "tokens_estimated": 82,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/lib/api.ts",
+          "tokens_estimated": 4325,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/components/app-shell.tsx",
+          "tokens_estimated": 4197,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/admin/users.tsx",
+          "tokens_estimated": 4976,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/ai/OpenAiClient.java",
+          "tokens_estimated": 674,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/controller/AiSettingsController.java",
+          "tokens_estimated": 292,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "/home/kasem/.claude/plans/plan-to-add-deepseek-warm-wren.md",
+          "tokens_estimated": 1874,
+          "action": "create"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/entity/AiSettings.java",
+          "tokens_estimated": 73,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/dto/request/AiSettingsRequest.java",
+          "tokens_estimated": 49,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/dto/response/AiSettingsResponse.java",
+          "tokens_estimated": 51,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/service/AiSettingsService.java",
+          "tokens_estimated": 217,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/service/AiSettingsService.java",
+          "tokens_estimated": 114,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/java/com/terra/backend/service/AiSettingsService.java",
+          "tokens_estimated": 86,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/lib/api.ts",
+          "tokens_estimated": 44,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/admin/ai-settings.tsx",
+          "tokens_estimated": 268,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/admin/ai-settings.tsx",
+          "tokens_estimated": 719,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/admin/ai-settings.tsx",
+          "tokens_estimated": 66,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/admin/ai-settings.tsx",
+          "tokens_estimated": 217,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/components/app-shell.tsx",
+          "tokens_estimated": 26,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/components/app-shell.tsx",
+          "tokens_estimated": 333,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/components/app-shell.tsx",
+          "tokens_estimated": 102,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/components/app-shell.tsx",
+          "tokens_estimated": 60,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/manager/dashboard.tsx",
+          "tokens_estimated": 23,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/manager/dashboard.tsx",
+          "tokens_estimated": 67,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/manager/dashboard.tsx",
+          "tokens_estimated": 12,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/manager/kanban.tsx",
+          "tokens_estimated": 23,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/manager/kanban.tsx",
+          "tokens_estimated": 55,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/manager/kanban.tsx",
+          "tokens_estimated": 52,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/member/kanban.tsx",
+          "tokens_estimated": 23,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/member/kanban.tsx",
+          "tokens_estimated": 57,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/member/kanban.tsx",
+          "tokens_estimated": 55,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/member/my-tasks.tsx",
+          "tokens_estimated": 23,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/member/my-tasks.tsx",
+          "tokens_estimated": 75,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/member/my-tasks.tsx",
+          "tokens_estimated": 112,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/member/projects.tsx",
+          "tokens_estimated": 23,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/member/projects.tsx",
+          "tokens_estimated": 61,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/components/app-shell.tsx",
+          "tokens_estimated": 160,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/components/app-shell.tsx",
+          "tokens_estimated": 61,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/components/app-shell.tsx",
+          "tokens_estimated": 17,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/__root.tsx",
+          "tokens_estimated": 133,
+          "action": "edit"
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/src/routes/__root.tsx",
+          "tokens_estimated": 303,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 18448,
+        "output_tokens_estimated": 5634,
+        "reads_count": 10,
+        "writes_count": 35,
+        "repeated_reads_blocked": 3,
+        "anatomy_lookups": 10
+      }
+    },
+    {
+      "id": "session-2026-07-09-0837",
+      "started": "2026-07-09T05:37:25.989Z",
+      "ended": "2026-07-09T05:42:55.157Z",
+      "reads": [
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/Dockerfile",
+          "tokens_estimated": 38,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [],
+      "totals": {
+        "input_tokens_estimated": 38,
+        "output_tokens_estimated": 0,
+        "reads_count": 1,
+        "writes_count": 0,
+        "repeated_reads_blocked": 0,
+        "anatomy_lookups": 1
+      }
+    },
+    {
+      "id": "session-2026-07-09-0837",
+      "started": "2026-07-09T05:37:25.989Z",
+      "ended": "2026-07-09T05:44:24.461Z",
+      "reads": [
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/Dockerfile",
+          "tokens_estimated": 38,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [],
+      "totals": {
+        "input_tokens_estimated": 38,
+        "output_tokens_estimated": 0,
+        "reads_count": 1,
+        "writes_count": 0,
+        "repeated_reads_blocked": 0,
+        "anatomy_lookups": 1
+      }
+    },
+    {
+      "id": "session-2026-07-09-0837",
+      "started": "2026-07-09T05:37:25.989Z",
+      "ended": "2026-07-09T06:22:06.666Z",
+      "reads": [
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/Dockerfile",
+          "tokens_estimated": 38,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [],
+      "totals": {
+        "input_tokens_estimated": 38,
+        "output_tokens_estimated": 0,
+        "reads_count": 1,
+        "writes_count": 0,
+        "repeated_reads_blocked": 0,
+        "anatomy_lookups": 1
+      }
+    },
+    {
+      "id": "session-2026-07-09-1327",
+      "started": "2026-07-09T10:27:22.610Z",
+      "ended": "2026-07-09T10:31:54.974Z",
+      "reads": [
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/docker-compose.yml",
+          "tokens_estimated": 383,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/Dockerfile",
+          "tokens_estimated": 33,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/Dockerfile",
+          "tokens_estimated": 38,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "/home/kasem/.claude/plans/push-changes-to-docker-transient-ullman.md",
+          "tokens_estimated": 798,
+          "action": "create"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 454,
+        "output_tokens_estimated": 798,
+        "reads_count": 3,
+        "writes_count": 1,
+        "repeated_reads_blocked": 0,
+        "anatomy_lookups": 3
+      }
+    },
+    {
+      "id": "session-2026-07-09-1327",
+      "started": "2026-07-09T10:27:22.610Z",
+      "ended": "2026-07-09T10:37:20.400Z",
+      "reads": [
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/docker-compose.yml",
+          "tokens_estimated": 383,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/Dockerfile",
+          "tokens_estimated": 33,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/Dockerfile",
+          "tokens_estimated": 38,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "/home/kasem/.claude/plans/push-changes-to-docker-transient-ullman.md",
+          "tokens_estimated": 798,
+          "action": "create"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 454,
+        "output_tokens_estimated": 798,
+        "reads_count": 3,
+        "writes_count": 1,
+        "repeated_reads_blocked": 0,
+        "anatomy_lookups": 3
+      }
+    },
+    {
+      "id": "session-2026-07-09-1327",
+      "started": "2026-07-09T10:27:22.610Z",
+      "ended": "2026-07-09T10:41:01.699Z",
+      "reads": [
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/docker-compose.yml",
+          "tokens_estimated": 383,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/frontend/Dockerfile",
+          "tokens_estimated": 33,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/kasem/Documents/freelance/ai-project-manager/backend/Dockerfile",
+          "tokens_estimated": 38,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "/home/kasem/.claude/plans/push-changes-to-docker-transient-ullman.md",
+          "tokens_estimated": 798,
+          "action": "create"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 454,
+        "output_tokens_estimated": 798,
+        "reads_count": 3,
+        "writes_count": 1,
+        "repeated_reads_blocked": 0,
+        "anatomy_lookups": 3
+      }
+    }
+  ],
+  "daemon_usage": [],
+  "waste_flags": [],
+  "optimization_report": {
+    "last_generated": null,
+    "patterns": []
+  }
+}

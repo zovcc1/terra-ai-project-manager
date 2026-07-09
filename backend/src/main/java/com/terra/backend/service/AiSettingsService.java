@@ -40,7 +40,7 @@ public class AiSettingsService {
         }
         String key = decrypt(settings.getApiKeyEncrypted());
         String model = firstNonBlank(settings.getModel(), settings.getDefaultModel(), DEFAULT_MODEL);
-        String url = resolveApiUrl(settings.getProvider());
+        String url = firstNonBlank(settings.getApiUrl(), resolveApiUrl(settings.getProvider()));
         return new LlmConfig(key, model, url);
     }
 
@@ -49,6 +49,7 @@ public class AiSettingsService {
         return switch (p) {
             case "openai" -> "https://api.openai.com/v1/chat/completions";
             case "openrouter" -> "https://openrouter.ai/api/v1/chat/completions";
+            case "deepseek" -> "https://api.deepseek.com/v1/chat/completions";
             default -> fallbackApiUrl;
         };
     }
@@ -68,6 +69,7 @@ public class AiSettingsService {
                 .apiKeyMasked(maskApiKey(decrypt(settings.getApiKeyEncrypted())))
                 .enabled(settings.isEnabled())
                 .defaultModel(settings.getDefaultModel())
+                .apiUrl(settings.getApiUrl())
                 .build();
     }
 
@@ -95,6 +97,7 @@ public class AiSettingsService {
         }
         if (request.getEnabled() != null) settings.setEnabled(request.getEnabled());
         if (request.getDefaultModel() != null) settings.setDefaultModel(request.getDefaultModel());
+        if (request.getApiUrl() != null) settings.setApiUrl(request.getApiUrl());
         repository.save(settings);
     }
 

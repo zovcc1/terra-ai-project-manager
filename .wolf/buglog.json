@@ -1,0 +1,423 @@
+{
+  "version": 1,
+  "bugs": [
+    {
+      "id": "bug-001",
+      "timestamp": "2026-07-04T13:48:30.581Z",
+      "error_message": "Missing error handling in subscribeNotifications",
+      "file": "frontend/src/lib/websocket.ts",
+      "root_cause": "Code path had no error handling — exceptions would propagate uncaught",
+      "fix": "Added try/catch block",
+      "tags": [
+        "auto-detected",
+        "error-handling",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-07-04T13:48:30.581Z"
+    },
+    {
+      "id": "bug-002",
+      "timestamp": "2026-07-04T13:49:22.325Z",
+      "error_message": "Null/undefined access in ",
+      "file": "frontend/src/routes/member/tasks.$taskId.tsx",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check) | Also: if (!token) return;; let unsubscribe: (() => void) | undefined;",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-07-04T13:50:10.361Z"
+    },
+    {
+      "id": "bug-003",
+      "timestamp": "2026-07-04T00:00:00.000Z",
+      "error_message": "@mention notifications never arrive in real time (bell badge/dropdown never updates without a manual refresh)",
+      "file": "frontend/src/lib/websocket.ts",
+      "root_cause": "subscribeNotifications() had a registration-order race: the STOMP SUBSCRIBE for /user/queue/notifications was only ever sent from inside wsConnect's onConnect handler, gated on pendingNotificationCallbacks being non-empty at that exact instant. Every real caller (app-shell.tsx) awaited wsConnect(token) first and registered its callback after, so onConnect always ran with an empty queue, skipped the subscribe, and left activeNotificationSub null. subscribeNotifications() then fell into a branch that only pushed the callback into an array and returned — it never called stompClient.subscribe(). The backend's convertAndSendToUser(username, \"/queue/notifications\", ...) was correct but landed on a destination nobody had subscribed to.",
+      "fix": "Rewrote subscribeNotifications() to always register the callback AND create the STOMP subscription immediately if stompClient.connected && !activeNotificationSub (covers the connected-but-registered-late case). Unsubscribe/cleanup now tears down activeNotificationSub only when the callback list is empty.",
+      "tags": [
+        "websocket",
+        "stomp",
+        "notifications",
+        "mentions",
+        "race-condition",
+        "real-time"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-07-04T00:00:00.000Z"
+    },
+    {
+      "id": "bug-004",
+      "timestamp": "2026-07-04T00:00:00.000Z",
+      "error_message": "Real-time comment subscription leaks on task navigation and is fragile under React StrictMode",
+      "file": "frontend/src/routes/member/tasks.$taskId.tsx, frontend/src/routes/manager/tasks.$taskId.tsx",
+      "root_cause": "The comment-subscription useEffect captured the unsubscribe function returned by subscribeTaskComments(...) inside the wsConnect(token).then(...) callback and returned it from there, not from the effect itself — so React never called it on cleanup. Combined with a wsInitialized ref that the cleanup reset (rather than gating the effect), the underlying STOMP subscription was left dangling on every task unmount/remount (e.g. StrictMode double-invoke or navigating away and back).",
+      "fix": "Hoisted an outer `let unsubscribe` variable, assigned it inside the .then() callback, and called `unsubscribe?.()` from the effect's real cleanup alongside a `cancelled` flag. Removed the wsInitialized ref guard entirely.",
+      "tags": [
+        "websocket",
+        "stomp",
+        "comments",
+        "react",
+        "memory-leak",
+        "useEffect",
+        "strict-mode"
+      ],
+      "related_bugs": [
+        "bug-003"
+      ],
+      "occurrences": 1,
+      "last_seen": "2026-07-04T00:00:00.000Z"
+    },
+    {
+      "id": "bug-005",
+      "timestamp": "2026-07-04T00:00:00.000Z",
+      "error_message": "Notification dropdown 'next page' is a no-op",
+      "file": "frontend/src/lib/api.ts",
+      "root_cause": "getRecentNotifications() was typed as () => Promise<NotificationResponse[]> and took no arguments, but /notifications/recent actually returns a Spring Page, and app-shell.tsx called getRecentNotifications(page, 20) and read .content/.totalPages off the result. The page argument was silently dropped (never sent as a query param), so it happened to work for page 0 only.",
+      "fix": "Added a Page<T> interface and changed getRecentNotifications to accept (page = 0, size = 20), sending them as ?page=&size= query params, returning Promise<Page<NotificationResponse>>.",
+      "tags": [
+        "api",
+        "pagination",
+        "typescript",
+        "notifications"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-07-04T00:00:00.000Z"
+    },
+    {
+      "id": "bug-006",
+      "timestamp": "2026-07-04T17:42:40.270Z",
+      "error_message": "Significant refactor of ",
+      "file": "backend/src/main/java/com/terra/backend/controller/TaskController.java",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 7→8 lines (2 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "java"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-07-04T17:42:40.270Z"
+    },
+    {
+      "id": "bug-007",
+      "timestamp": "2026-07-04T17:44:31.555Z",
+      "error_message": "CSS fix: data",
+      "file": "frontend/src/routes/member/tasks.$taskId.tsx",
+      "root_cause": "data: comments, isLoading: commentsLoading → comments, isLoading: commentsLoading, isError: commentsError",
+      "fix": "Changed data: comments, isLoading: commentsLoading → comments, isLoading: commentsLoading, isError: commentsError",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-07-04T17:45:19.376Z"
+    },
+    {
+      "id": "bug-008",
+      "timestamp": "2026-07-04T21:05:00.000Z",
+      "error_message": "Members not in a project's team_members list get HTTP 500 (not 403) when fetching a task or its comments, and the frontend silently shows an empty comment list instead of any error — reproduced with member@terra.com on task 17 (project 'Website Redesign', team_id=1 has 0 rows in team_members)",
+      "file": "backend/src/main/java/com/terra/backend/exception/GlobalExceptionHandler.java, backend/src/main/java/com/terra/backend/controller/TaskController.java, frontend/src/routes/member/tasks.$taskId.tsx, frontend/src/routes/manager/tasks.$taskId.tsx",
+      "root_cause": "Three compounding issues: (1) GlobalExceptionHandler's catch-all @ExceptionHandler(RuntimeException.class) intercepted AccessDeniedException (a RuntimeException subclass) and returned 500 instead of 403. (2) TaskController.getTaskById used a loose @PreAuthorize(\"hasRole('ADMIN') or hasRole('MANAGER') or hasRole('MEMBER')\") with no task/project-specific check, unlike CommentController and TaskController.moveTask which both use @authorizationService.hasTaskAccess(...) — so a member with zero project access could still load the task detail page. (3) The taskComments useQuery in both task-detail routes had no error handling, so any fetch failure silently rendered the 'no comments yet' empty state, completely hiding the failure.",
+      "fix": "Added @ExceptionHandler(AccessDeniedException.class) -> 403 in GlobalExceptionHandler (Spring resolves by most-specific type, so this doesn't require reordering the catch-all). Changed TaskController.getTaskById's @PreAuthorize to @authorizationService.hasTaskAccess(#principal.username, #id), matching moveTask/CommentController. Added isError (with retry:false) to the taskComments useQuery in both task-detail routes and rendered an Arabic access-error message instead of the silent empty state. Verified live: member@terra.com now gets 403 (was 500) on GET /api/member/tasks/17 and /comments; manager@terra.com (real access) unaffected and real-time comment delivery via WebSocket still works.",
+      "tags": [
+        "security",
+        "spring-security",
+        "access-control",
+        "exception-handling",
+        "comments",
+        "react-query",
+        "error-handling"
+      ],
+      "related_bugs": [
+        "bug-004"
+      ],
+      "occurrences": 1,
+      "last_seen": "2026-07-04T21:05:00.000Z"
+    },
+    {
+      "id": "bug-009",
+      "timestamp": "2026-07-04T18:38:17.939Z",
+      "error_message": "Missing error handling in createCommentStompSub",
+      "file": "frontend/src/lib/websocket.ts",
+      "root_cause": "Code path had no error handling — exceptions would propagate uncaught",
+      "fix": "Added try/catch block",
+      "tags": [
+        "auto-detected",
+        "error-handling",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-07-04T18:38:17.939Z"
+    },
+    {
+      "id": "bug-010",
+      "timestamp": "2026-07-04T21:38:00.000Z",
+      "error_message": "Member sees manager's plain (non-@mention) comments in real time only after posting/receiving an @mention first — reported as 'real-time comments only work with mentions'",
+      "file": "frontend/src/lib/websocket.ts",
+      "root_cause": "@stomp/stompjs v7 does not auto-resubscribe topics after a dropped connection reconnects (reconnectDelay: 5000 configured). Only the notification subscription (/user/queue/notifications) was revived inside onConnect. The per-task comment subscription (/topic/task/{taskId}/comments), created once via subscribeTaskComments() in a React effect, was never re-created on reconnect. After any reconnect (heartbeat timeout, network blip, backend restart) the comment subscription was silently dead while the notification subscription (and therefore @mention delivery) kept working — making it look like only mentions ever deliver live.",
+      "fix": "Added a commentSubs registry (taskId, callback, sub) mirroring the existing notification-callback pattern. createCommentStompSub() creates/recreates a subscription from a registry entry. onConnect now iterates commentSubs and recreates every subscription on every (re)connect. subscribeTaskComments() registers into commentSubs and creates the subscription immediately if already connected (no longer a no-op warning when called pre-connect); its returned unsubscribe both unsubscribes and removes the registry entry. wsDisconnect() resets commentSubs = []. Frontend-only change; backend already broadcasts every comment unconditionally (CommentService.addComment). No changes needed in the task-detail routes — they already clean up via the returned unsubscribe (bug-004).",
+      "tags": [
+        "websocket",
+        "stomp",
+        "comments",
+        "reconnect",
+        "real-time",
+        "race-condition"
+      ],
+      "related_bugs": [
+        "bug-003",
+        "bug-004"
+      ],
+      "occurrences": 1,
+      "last_seen": "2026-07-04T21:38:00.000Z"
+    },
+    {
+      "id": "bug-011",
+      "timestamp": "2026-07-04T22:20:00.000Z",
+      "error_message": "Member viewing a task detail page sees the manager's role label ('مدير المشروع') and manager-only sidebar links (لوحة التحكم، إنشاء مشروع، التحليلات) instead of member-appropriate navigation",
+      "file": "frontend/src/routes/member/tasks.$taskId.tsx",
+      "root_cause": "All 3 <AppShell persona=\"manager\"> call sites in this file are hardcoded to \"manager\" — almost certainly copy-pasted from the manager route's tasks.$taskId.tsx without updating the persona prop. localStorage terra_user correctly reports role: MEMBER; this is a display-only bug in the shared AppShell prop, not an access-control issue (backend @PreAuthorize/hasTaskAccess checks are unaffected and independently enforced).",
+      "fix": "FIXED (2026-07-06, together with bug-014): changed persona=\"manager\" to persona=\"member\" at all 3 call sites in member/tasks.$taskId.tsx.",
+      "tags": [
+        "ui",
+        "role-display",
+        "app-shell",
+        "copy-paste",
+        "needs-fix"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-07-04T22:20:00.000Z"
+    },
+    {
+      "id": "bug-012",
+      "timestamp": "2026-07-06T00:21:49.794Z",
+      "error_message": "Null/undefined access in ",
+      "file": "backend/src/main/java/com/terra/backend/service/AiSettingsService.java",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "java"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-07-06T00:21:49.794Z"
+    },
+    {
+      "id": "bug-013",
+      "timestamp": "2026-07-06T00:22:32.517Z",
+      "error_message": "Significant refactor of ",
+      "file": "backend/src/main/resources/application.properties",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 4→5 lines (2 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "properties"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-07-06T00:22:32.517Z"
+    },
+    {
+      "id": "bug-014",
+      "timestamp": "2026-07-06T00:00:00.000Z",
+      "error_message": "Comments are real-time on the manager side but NOT on the member side",
+      "file": "frontend/src/routes/member/tasks.$taskId.tsx, frontend/src/routes/member/kanban.tsx, frontend/src/routes/member/projects.tsx",
+      "root_cause": "Two compounding issues, both frontend (backend broadcasts /topic/task/{id}/comments unconditionally and the WS interceptor only authenticates CONNECT — no role gating). (1) member/tasks.$taskId.tsx — the ONLY member page that calls subscribeTaskComments — has beforeLoad: requireRole(\"/manager\") copy-pasted from the manager route. requireRole compares the prefix to rolePrefixMap[role]; for a MEMBER, \"/manager\" !== \"/member\" → redirect to /member/kanban. So actual members can never reach the page with the working WS subscription (same copy-paste family as bug-011 persona=\"manager\"). (2) The places members actually read comments — the task modals in member/kanban.tsx and member/projects.tsx — fetch via plain useQuery(getTaskComments) and only invalidateQueries after the member posts their OWN comment. Neither file imports anything from lib/websocket.ts, so incoming comments from the manager never appear until the modal is reopened or the member posts.",
+      "fix": "FIXED (2026-07-06): (a) changed requireRole(\"/manager\") to requireRole(\"/member\") in member/tasks.$taskId.tsx (persona prop fixed alongside, see bug-011), and (b) added a wsConnect + subscribeTaskComments effect (mirroring the manager route's bug-004 cleanup pattern, gated on the modal's `open` prop) to the TaskDetailDialog components in member/kanban.tsx and member/projects.tsx, updating the [\"taskComments\", taskId] query cache on incoming comment/delete events. Verified with tsc --noEmit and eslint against the pre-edit baseline — no new type or lint errors introduced.",
+      "tags": [
+        "websocket",
+        "comments",
+        "real-time",
+        "route-guard",
+        "copy-paste",
+        "member",
+        "needs-fix"
+      ],
+      "related_bugs": [
+        "bug-004",
+        "bug-010",
+        "bug-011"
+      ],
+      "occurrences": 1,
+      "last_seen": "2026-07-06T00:00:00.000Z"
+    },
+    {
+      "id": "bug-015",
+      "timestamp": "2026-07-06T00:54:14.208Z",
+      "error_message": "Missing error handling in unknown",
+      "file": "frontend/src/routes/member/kanban.tsx",
+      "root_cause": "Code path had no error handling — exceptions would propagate uncaught",
+      "fix": "Added try/catch block",
+      "tags": [
+        "auto-detected",
+        "error-handling",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-07-06T00:54:14.208Z"
+    },
+    {
+      "id": "bug-016",
+      "timestamp": "2026-07-06T00:54:54.023Z",
+      "error_message": "Missing error handling in unknown",
+      "file": "frontend/src/routes/member/projects.tsx",
+      "root_cause": "Code path had no error handling — exceptions would propagate uncaught",
+      "fix": "Added try/catch block",
+      "tags": [
+        "auto-detected",
+        "error-handling",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-07-06T00:54:54.023Z"
+    },
+    {
+      "id": "bug-017",
+      "timestamp": "2026-07-06T00:55:07.616Z",
+      "error_message": "Incorrect value in code",
+      "file": "frontend/src/routes/member/tasks.$taskId.tsx",
+      "root_cause": "Had \"/manager\"",
+      "fix": "Changed to \"/member\"",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-07-06T00:55:08.514Z"
+    },
+    {
+      "id": "bug-018",
+      "timestamp": "2026-07-09T04:58:02.181Z",
+      "error_message": "Wrong operator: === should be &&",
+      "file": "frontend/src/routes/admin/ai-settings.tsx",
+      "root_cause": "Used \"===\" instead of \"&&\"",
+      "fix": "Changed operator === → &&",
+      "tags": [
+        "auto-detected",
+        "operator-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-07-09T04:58:02.181Z"
+    },
+    {
+      "id": "bug-019",
+      "timestamp": "2026-07-09T05:00:05.359Z",
+      "error_message": "Type error",
+      "file": "frontend/src/components/app-shell.tsx",
+      "root_cause": "Missing or incorrect type annotation",
+      "fix": "Added type assertion/annotation",
+      "tags": [
+        "auto-detected",
+        "type-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-07-09T05:00:05.359Z"
+    },
+    {
+      "id": "bug-020",
+      "timestamp": "2026-07-09T05:00:54.352Z",
+      "error_message": "Null/undefined access in ",
+      "file": "frontend/src/routes/manager/dashboard.tsx",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-07-09T05:00:54.352Z"
+    },
+    {
+      "id": "bug-021",
+      "timestamp": "2026-07-09T05:01:12.771Z",
+      "error_message": "Wrong reference: projects should be filteredProjects",
+      "file": "frontend/src/routes/manager/dashboard.tsx",
+      "root_cause": "Used \"projects\" instead of \"filteredProjects\"",
+      "fix": "Changed projects → filteredProjects",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-07-09T05:01:12.771Z"
+    },
+    {
+      "id": "bug-022",
+      "timestamp": "2026-07-09T05:04:03.007Z",
+      "error_message": "Null/undefined access in ",
+      "file": "frontend/src/routes/member/my-tasks.tsx",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check) | Also: {filteredTasks?.map((t, i) => (; (i !== filteredTasks.length - 1 ? \" border-b border-border\" ",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-07-09T05:04:42.630Z"
+    },
+    {
+      "id": "bug-023",
+      "timestamp": "2026-07-09T05:09:20.389Z",
+      "error_message": "Significant refactor of ",
+      "file": "frontend/src/components/app-shell.tsx",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 9→14 lines (2 removed) | Also: const [searchQuery, setSearchQuery] = useState(\"\"); // Reset the header search term whenever the route",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-07-09T05:09:27.997Z"
+    },
+    {
+      "id": "bug-024",
+      "timestamp": "2026-07-09T05:17:52.000Z",
+      "error_message": "Header search state placed in SearchContext.Provider inside AppShell would never be visible to page components (query always empty, setQuery a no-op)",
+      "file": "frontend/src/components/app-shell.tsx",
+      "root_cause": "Page route components render <AppShell persona=\"...\">{content}</AppShell> — the page is AppShell's PARENT in the fiber tree, not its child. A Provider placed inside AppShell (wrapping {children}) is a descendant of the page, so useContext() called in the page itself can never see it — it silently falls back to the Context default value. Caught during self-review before considering the task done, by reasoning through the actual component tree rather than trusting that tsc passing meant it worked.",
+      "fix": "Moved SearchContext state (and the reset-on-route-change effect) up to AppContent in frontend/src/routes/__root.tsx, a genuine ancestor of every routed page. AppShell now just consumes the same context via useContext instead of owning/providing it.",
+      "tags": [
+        "react",
+        "context",
+        "component-tree",
+        "search",
+        "ai-settings"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-07-09T05:17:52.000Z"
+    }
+  ]
+}

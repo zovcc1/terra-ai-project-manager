@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { AppShell, PageHeader } from "@/components/app-shell";
+import { AppShell, PageHeader, useHeaderSearch } from "@/components/app-shell";
 import { requireRole } from "@/lib/route-guards";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -19,6 +19,11 @@ function Page() {
     queryKey: ["myTasks"],
     queryFn: getMyTasks,
   });
+
+  const { query } = useHeaderSearch();
+  const filteredTasks = tasks?.filter((t) =>
+    t.title.toLowerCase().includes(query.toLowerCase())
+  );
 
   return (
     <AppShell persona="member">
@@ -39,12 +44,12 @@ function Page() {
       ) : tasks && tasks.length > 0 ? (
         <Card>
           <CardContent className="p-0">
-            {tasks.map((t, i) => (
+            {filteredTasks?.map((t, i) => (
               <div
                 key={t.id}
                 className={
                   "flex flex-wrap items-center justify-between gap-4 p-4" +
-                  (i !== tasks.length - 1 ? " border-b border-border" : "")
+                  (i !== filteredTasks.length - 1 ? " border-b border-border" : "")
                 }
               >
                 <div className="flex items-start gap-3">

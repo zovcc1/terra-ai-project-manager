@@ -1,0 +1,64 @@
+{
+  "session_id": "session-2026-06-24-1455",
+  "started": "2026-06-24T11:55:33.975Z",
+  "files_read": {
+    "/home/kasem/.claude/projects/-home-kasem-Documents-freelance-ai-project-manager/memory/project_terra.md": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-06-24T11:56:05.763Z"
+    },
+    "/home/kasem/Documents/freelance/ai-project-manager/docker-compose.yml": {
+      "count": 1,
+      "tokens": 383,
+      "first_read": "2026-06-24T11:56:14.781Z"
+    },
+    "/home/kasem/Documents/freelance/ai-project-manager/.env.example": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-06-24T11:56:15.863Z"
+    },
+    "/home/kasem/Documents/freelance/ai-project-manager/backend/pom.xml": {
+      "count": 1,
+      "tokens": 975,
+      "first_read": "2026-06-24T11:56:16.394Z"
+    },
+    "/home/kasem/Documents/freelance/ai-project-manager/frontend/package.json": {
+      "count": 1,
+      "tokens": 952,
+      "first_read": "2026-06-24T11:56:16.625Z"
+    },
+    "/home/kasem/Documents/freelance/ai-project-manager/backend/src/main/resources/application.properties": {
+      "count": 1,
+      "tokens": 439,
+      "first_read": "2026-06-24T11:56:16.941Z"
+    },
+    "/home/kasem/Documents/freelance/ai-project-manager/.gitignore": {
+      "count": 1,
+      "tokens": 35,
+      "first_read": "2026-06-24T11:57:12.926Z"
+    }
+  },
+  "files_written": [
+    {
+      "file": "/home/kasem/.claude/plans/make-readme-md-for-the-steady-glade.md",
+      "action": "create",
+      "tokens": 1708,
+      "at": "2026-06-24T11:58:16.197Z"
+    },
+    {
+      "file": "/home/kasem/Documents/freelance/ai-project-manager/README.md",
+      "action": "create",
+      "tokens": 2342,
+      "at": "2026-06-24T11:59:29.234Z"
+    }
+  ],
+  "edit_counts": {
+    "../../../.claude/plans/make-readme-md-for-the-steady-glade.md": 1,
+    "README.md": 1
+  },
+  "anatomy_hits": 5,
+  "anatomy_misses": 2,
+  "repeated_reads_warned": 0,
+  "cerebrum_warnings": 0,
+  "stop_count": 1
+}

@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { AppShell, PageHeader } from "@/components/app-shell";
+import { AppShell, PageHeader, useHeaderSearch } from "@/components/app-shell";
 import { requireRole } from "@/lib/route-guards";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,6 +34,11 @@ function DashboardPage() {
     queryFn: getRecentActivity,
   });
 
+  const { query } = useHeaderSearch();
+  const filteredProjects = projects?.filter((p) =>
+    p.name.toLowerCase().includes(query.toLowerCase())
+  );
+
   return (
     <AppShell persona="manager">
       <PageHeader
@@ -65,7 +70,7 @@ function DashboardPage() {
             </Card>
           )}
 
-          {projects?.map((p) => (
+          {filteredProjects?.map((p) => (
             <Card key={p.id}>
               <CardContent className="p-5">
                 <div className="flex items-start justify-between gap-4">

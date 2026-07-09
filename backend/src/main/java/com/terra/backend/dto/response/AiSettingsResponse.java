@@ -11,4 +11,5 @@ public class AiSettingsResponse {
     private String apiKeyMasked;
     private boolean enabled;
     private String defaultModel;
+    private String apiUrl;
 }

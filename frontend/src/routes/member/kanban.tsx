@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState, useCallback, useEffect } from "react";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { AppShell, PageHeader } from "@/components/app-shell";
+import { AppShell, PageHeader, useHeaderSearch } from "@/components/app-shell";
 import { requireRole } from "@/lib/route-guards";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -219,6 +219,8 @@ function Page() {
     queryFn: getMyTasks,
   });
 
+  const { query } = useHeaderSearch();
+
   // WebSocket subscription for real‑time updates (still listens to project events,
   // but we'll just refetch myTasks on any change)
   useEffect(() => {
@@ -302,7 +304,9 @@ function Page() {
               </div>
             ))
           : COLS.map((c) => {
-              const cards = (tasks || []).filter((t) => statusToCol(t.status) === c.key);
+              const cards = (tasks || [])
+                .filter((t) => t.title.toLowerCase().includes(query.toLowerCase()))
+                .filter((t) => statusToCol(t.status) === c.key);
               const isOver = overCol === c.key;
               return (
                 <div

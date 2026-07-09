@@ -1,0 +1,37 @@
+{
+  "session_id": "session-2026-07-09-1327",
+  "started": "2026-07-09T10:27:22.610Z",
+  "files_read": {
+    "/home/kasem/Documents/freelance/ai-project-manager/docker-compose.yml": {
+      "count": 1,
+      "tokens": 383,
+      "first_read": "2026-07-09T10:28:09.634Z"
+    },
+    "/home/kasem/Documents/freelance/ai-project-manager/frontend/Dockerfile": {
+      "count": 1,
+      "tokens": 33,
+      "first_read": "2026-07-09T10:29:21.981Z"
+    },
+    "/home/kasem/Documents/freelance/ai-project-manager/backend/Dockerfile": {
+      "count": 1,
+      "tokens": 38,
+      "first_read": "2026-07-09T10:29:22.586Z"
+    }
+  },
+  "files_written": [
+    {
+      "file": "/home/kasem/.claude/plans/push-changes-to-docker-transient-ullman.md",
+      "action": "create",
+      "tokens": 798,
+      "at": "2026-07-09T10:30:20.664Z"
+    }
+  ],
+  "edit_counts": {
+    "../../../.claude/plans/push-changes-to-docker-transient-ullman.md": 1
+  },
+  "anatomy_hits": 3,
+  "anatomy_misses": 0,
+  "repeated_reads_warned": 0,
+  "cerebrum_warnings": 0,
+  "stop_count": 3
+}
